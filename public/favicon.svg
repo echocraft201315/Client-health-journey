@@ -1,0 +1,15 @@
+
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" fill="url(#grad)" rx="6.4"/>
+  <circle cx="16" cy="12.8" r="4.8" fill="white" opacity="0.9"/>
+  <path d="M 11.2 19.2 L 16 24 L 20.8 19.2" 
+        stroke="white" stroke-width="2.56" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="16" y="27.2" text-anchor="middle" fill="white" 
+        font-family="Arial, sans-serif" font-size="3.84" font-weight="bold">HJ</text>
+</svg>
