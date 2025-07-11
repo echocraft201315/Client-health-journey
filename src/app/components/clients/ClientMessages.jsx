@@ -441,30 +441,20 @@ const ClientMessages = () => {
             </div>
           ) : messages && messages.length > 0 ? (
             <div className="space-y-4" key={messages.length}>
-              {messages.map((msg, idx) => (
-                <React.Fragment key={msg.id}>
-                  {idx === firstUnreadIndex && (
-                    <div className="text-xs text-muted-foreground mt-2 mb-4">
-                      <div className="flex items-center gap-2">
-                        <hr className="flex-1" />
-                        <span>Unread messages</span>
-                        <hr className="flex-1" />
+              {messages.map((msg, idx) => {
+                return (
+                  <React.Fragment key={msg.id}>
+                    {idx === firstUnreadIndex && (
+                      <div className="text-xs text-muted-foreground mt-2 mb-4">
+                        <div className="flex items-center gap-2">
+                          <hr className="flex-1" />
+                          <span>Unread messages</span>
+                          <hr className="flex-1" />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <div
-                      className={`flex ${
-                        msg.from === user.email ? "justify-end" : "justify-start"
-                      }`}
-                    >
-                      <div
-                        className={`flex items-start gap-2 max-w-[80%] ${
-                          msg.from === user.email
-                            ? "flex-row-reverse"
-                            : "flex-row"
-                        }`}
-                      >
+                    )}
+                    <div className={`flex flex-col gap-2 w-full ${msg.from === user.email ? "items-end" : "items-start"}`}>
+                      <div className={`flex items-start gap-2 max-w-[80%] ${msg.from === user.email ? "flex-row-reverse" : "flex-row"}`}>
                         <Avatar className="h-8 w-8">
                           {msg.senderAvatar ? (
                             <AvatarImage
@@ -477,7 +467,6 @@ const ClientMessages = () => {
                             </AvatarFallback>
                           )}
                         </Avatar>
-
                         <div>
                           <div
                             className={`px-4 py-2 rounded-lg text-sm flex justify-between ${
@@ -509,9 +498,9 @@ const ClientMessages = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                </React.Fragment>
-              ))}
+                  </React.Fragment>
+                );
+              })}
               <div ref={messagesEndRef} />
             </div>
           ) : (
