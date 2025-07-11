@@ -159,6 +159,6 @@ All checkIn review and recommendation must be based on program totally.
     return NextResponse.json({ status: true, checkin });
   } catch (error) {
     console.log("error", error);
-    return NextResponse.json({ status: false, message: Error });
+    return NextResponse.json({ status: false, message: error });
   }
 }
