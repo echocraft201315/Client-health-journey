@@ -9,7 +9,6 @@ import { clinicRepo } from "@/app/lib/db/clinicRepo";
 import { subscriptionRepo } from "@/app/lib/db/subscriptionRepo";
 import { SubscriptionPlan } from "@/app/lib/stack";
 import OpenAI from 'openai';
-import Error from "next/error";
 
 export async function POST(request) {
   const session = await getServerSession(authOptions);
@@ -159,6 +158,6 @@ All checkIn review and recommendation must be based on program totally.
     return NextResponse.json({ status: true, checkin });
   } catch (error) {
     console.log("error", error);
-    return NextResponse.json({ status: false, message: "error" });
+    return NextResponse.json({ status: false, message: error });
   }
 }
