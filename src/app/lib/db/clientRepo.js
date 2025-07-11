@@ -157,6 +157,22 @@ async function createCheckIn(
         ${energyLevel}, ${moodLevel}, ${exerciseType}, ${exercise}, ${exerciseTime}, ${sleepHours},
         ${JSON.stringify(nutrition || [])}, ${supplements}, ${notes}
       )
+      ON CONFLICT ("email", "selectedDate") DO UPDATE SET
+        "name" = EXCLUDED."name",
+        "coachId" = EXCLUDED."coachId",
+        "clinic" = EXCLUDED."clinic",
+        "weight" = EXCLUDED."weight",
+        "waist" = EXCLUDED."waist",
+        "waterIntake" = EXCLUDED."waterIntake",
+        "energyLevel" = EXCLUDED."energyLevel",
+        "moodLevel" = EXCLUDED."moodLevel",
+        "exerciseType" = EXCLUDED."exerciseType",
+        "exercise" = EXCLUDED."exercise",
+        "exerciseTime" = EXCLUDED."exerciseTime",
+        "sleepHours" = EXCLUDED."sleepHours",
+        "nutrition" = EXCLUDED."nutrition",
+        "supplements" = EXCLUDED."supplements",
+        "notes" = EXCLUDED."notes"
       RETURNING *
     `;
     return checkIn[0];
