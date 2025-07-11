@@ -20,7 +20,7 @@ export async function POST(request) {
   try {
     // Query all micronutrient entries between startDate and endDate (inclusive)
     const micronutrients = await sql`
-      SELECT * FROM "MicroNutrients" WHERE "email" = ${clientEmail} AND "createdAt" >= ${startDate} AND "createdAt" <= ${endDate}
+      SELECT * FROM "MicroNutrients" WHERE "email" = ${clientEmail} AND "createdAt" >= ${startDate} AND "createdAt" <= ${endDate} ORDER BY "createdAt" ASC
     `;
 
     // Group by date (assuming createdAt is a date string or Date object)

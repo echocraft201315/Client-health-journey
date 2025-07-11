@@ -18,7 +18,7 @@ export async function POST(request) {
   try {
     // Query all micronutrient entries between startDate and endDate (inclusive)
     const micronutrients = await sql`
-      SELECT * FROM "MicroNutrients" WHERE "email" = ${sessionUser.email} AND "createdAt" >= ${startDate} AND "createdAt" <= ${endDate}
+      SELECT * FROM "MicroNutrients" WHERE "email" = ${sessionUser.email} AND "createdAt" >= ${startDate} AND "createdAt" <= ${endDate} ORDER BY "createdAt" ASC
     `;
 
     // Group by date (assuming createdAt is a date string or Date object)
@@ -30,10 +30,13 @@ export async function POST(request) {
     });
 
     // For each date, combine micronutrient data
-    const microTrend = Object.entries(micronutrientsByDate).map(([date, entries]) => ({
+    let microTrend = Object.entries(micronutrientsByDate).map(([date, entries]) => ({
       date,
       totalMicronutrients: combineMicronutrientData(entries)
     }));
+
+    // Sort by date ascending
+    microTrend = microTrend.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     return NextResponse.json({ status: true, microTrend });
   } catch (error) {
