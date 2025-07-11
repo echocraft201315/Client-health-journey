@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import authOptions from "@/app/lib/authoption";
 import { userRepo } from "@/app/lib/db/userRepo";
+import { clientRepo } from "@/app/lib/db/clientRepo"
 import { sql } from "@/app/lib/db/postgresql";
-import { clientRepo } from "@/app/lib/db/clientRepo";
 
 export async function POST(request) {
   const session = await getServerSession(authOptions);
@@ -15,20 +15,29 @@ export async function POST(request) {
   if (!sessionUser) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
-  const { selectedDate, selectedClient } = await request.json();
+  const { startDate, endDate, selectedClient } = await request.json();
+  const clientEmail = await clientRepo.getEmailById(selectedClient);
   try {
-    const client = await clientRepo.getClientById(selectedClient);
-    if (!client) {
-      return NextResponse.json({ status: false, message: "Client not found" });
-    }
+    // Query all micronutrient entries between startDate and endDate (inclusive)
     const micronutrients = await sql`
-      SELECT * FROM "MicroNutrients" WHERE "email" = ${client.email} AND "createdAt" = ${selectedDate}
+      SELECT * FROM "MicroNutrients" WHERE "email" = ${clientEmail} AND "createdAt" >= ${startDate} AND "createdAt" <= ${endDate}
     `;
 
-    console.log("micronutrients", micronutrients)
-    const totalMicronutrients = combineMicronutrientData(micronutrients);
-    console.log("totalMicronutrients", totalMicronutrients)
-    return NextResponse.json({ status: true, totalMicronutrients: totalMicronutrients });
+    // Group by date (assuming createdAt is a date string or Date object)
+    const micronutrientsByDate = {};
+    micronutrients.forEach(entry => {
+      const dateKey = (typeof entry.createdAt === 'string' ? entry.createdAt : entry.createdAt.toISOString().split('T')[0]);
+      if (!micronutrientsByDate[dateKey]) micronutrientsByDate[dateKey] = [];
+      micronutrientsByDate[dateKey].push(entry);
+    });
+
+    // For each date, combine micronutrient data
+    const microTrend = Object.entries(micronutrientsByDate).map(([date, entries]) => ({
+      date,
+      totalMicronutrients: combineMicronutrientData(entries)
+    }));
+
+    return NextResponse.json({ status: true, microTrend });
   } catch (error) {
     console.log("error", error);
     return NextResponse.json({ status: false, message: "wrong" });
@@ -37,7 +46,7 @@ export async function POST(request) {
 
 function combineMicronutrientData(micronutrients) {
   const combined = {
-    fiber: 0, sugar: 0, sodium: 0, vitaminA: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0, vitaminK: 0,
+    fiber: 0, sodium: 0, vitaminA: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0, vitaminK: 0,
     vitaminB1: 0, vitaminB2: 0, vitaminB3: 0, vitaminB6: 0, vitaminB12: 0, folate: 0,
     calcium: 0, iron: 0, magnesium: 0, phosphorus: 0, potassium: 0, zinc: 0, selenium: 0
   };

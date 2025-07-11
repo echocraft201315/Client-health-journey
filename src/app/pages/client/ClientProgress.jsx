@@ -48,6 +48,7 @@ import { Calendar } from "@/app/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import ImageCard from "@/app/components/check-ins/form/resourceTabs/ImageCard";
+import MicroTrendTab from "../../components/reports/microtrendtab";
 import { useRouter } from "next/navigation";
 // Skeleton Components
 const NutrientSkeleton = () => (
@@ -192,7 +193,6 @@ const calculateCalories = (protein, carbs, fat) => {
 // Static targets and units for each micronutrient
 const MICRONUTRIENT_TARGETS = {
   fiber: { target: 25, unit: 'g' },
-  sugar: { target: 36, unit: 'g' },
   sodium: { target: 2300, unit: 'mg' },
   vitaminA: { target: 3000, unit: 'mcg' },
   vitaminC: { target: 90, unit: 'mg' },
@@ -217,7 +217,6 @@ const MICRONUTRIENT_TARGETS = {
 const formatNutrientName = (key) => {
   const nameMap = {
     fiber:        'Fiber',
-    sugar:        'Sugar',
     sodium:       'Sodium',
     vitaminA:     'Vitamin A',
     vitaminC:     'Vitamin C',
@@ -906,6 +905,16 @@ export default function HealthTracker() {
               className="w-full"
             />
               }
+              {
+                checkIns?.aiReview?.[0]&&
+              <TabButton
+              tab="micro_trend"
+              icon={Utensils}
+              label="micro_trend"
+              isActive={activeTab === "micro_trend"}
+              className="w-full"
+            />
+              }
               <TabButton
               tab="selfieImages"
               icon= {Image}
@@ -1172,6 +1181,11 @@ export default function HealthTracker() {
             {
               activeTab === "selfieImages" && (
                 <ImageCard/>
+              )
+            }
+            {
+              activeTab ==="micro_trend" && (
+                <MicroTrendTab/>
               )
             }
           </>

@@ -32,13 +32,10 @@ export async function POST(request) {
 
 function combineMicronutrientData(micronutrients) {
   const combined = {
-    fiber: 0, sugar: 0, sodium: 0, vitaminA: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0, vitaminK: 0,
+    fiber: 0, sodium: 0, vitaminA: 0, vitaminC: 0, vitaminD: 0, vitaminE: 0, vitaminK: 0,
     vitaminB1: 0, vitaminB2: 0, vitaminB3: 0, vitaminB6: 0, vitaminB12: 0, folate: 0,
-    calcium: 0, iron: 0, magnesium: 0, phosphorus: 0, potassium: 0, zinc: 0, selenium: 0,
-    micronutrient_sources: []
+    calcium: 0, iron: 0, magnesium: 0, phosphorus: 0, potassium: 0, zinc: 0, selenium: 0
   };
-
-  const seenSources = new Set();
 
   micronutrients.forEach(entry => {
     let content;
@@ -48,19 +45,10 @@ function combineMicronutrientData(micronutrients) {
       return;
     }
     Object.keys(combined).forEach(key => {
-      if (key !== 'micronutrient_sources' && typeof content[key] === 'number') {
+      if (typeof content[key] === 'number') {
         combined[key] += content[key];
       }
     });
-    if (Array.isArray(content.micronutrient_sources)) {
-      content.micronutrient_sources.forEach(src => {
-        const key = `${src.name}|${src.amount}|${src.source}`;
-        if (!seenSources.has(key)) {
-          seenSources.add(key);
-          combined.micronutrient_sources.push(src);
-        }
-      });
-    }
   });
 
   return combined;

@@ -68,7 +68,7 @@ const combineNutritionData = (dataArray) => {
 // Helper function to combine micronutrient data
 const combineMicroNutritionData = (dataArray) => {
     const micronutrientFields = [
-        'fiber', 'sugar', 'sodium', 'vitaminA', 'vitaminC', 'vitaminD', 'vitaminE', 'vitaminK',
+        'fiber', 'sodium', 'vitaminA', 'vitaminC', 'vitaminD', 'vitaminE', 'vitaminK',
         'vitaminB1', 'vitaminB2', 'vitaminB3', 'vitaminB6', 'vitaminB12', 'folate',
         'calcium', 'iron', 'magnesium', 'phosphorus', 'potassium', 'zinc', 'selenium'
     ];
@@ -76,22 +76,10 @@ const combineMicroNutritionData = (dataArray) => {
     micronutrientFields.forEach(field => {
         combined[field] = 0;
     });
-    let micronutrient_sources = [];
     dataArray.forEach(data => {
         micronutrientFields.forEach(field => {
             combined[field] += (data[field] || 0);
         });
-        if (Array.isArray(data.micronutrient_sources)) {
-            micronutrient_sources = micronutrient_sources.concat(data.micronutrient_sources);
-        }
-    });
-    // Optionally deduplicate micronutrient_sources by name+source+amount
-    const seen = new Set();
-    combined.micronutrient_sources = micronutrient_sources.filter(item => {
-        const key = `${item.name}|${item.amount}|${item.source}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
     });
     return combined;
 };
@@ -160,7 +148,6 @@ export async function POST(request) {
                                 "other": number,
                                 "otherList": "string- combined list of all other foods",
                                 "fiber": number,
-                                "sugar": number,
                                 "sodium": number,
                                 "vitaminA": number,
                                 "vitaminC": number,

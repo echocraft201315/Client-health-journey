@@ -43,6 +43,8 @@ import { format } from "date-fns";
 import { EnhancedMicronutrientReport } from "../reports/micronutrients";
 import ImageCardForCoach from "../check-ins/form/resourceTabs/ImageCardForCoach";
 import { Image } from "lucide-react";
+import MicroTrendCoachTab from "../reports/microtrendcoachtab";
+
 // Skeleton Components
 const NutrientSkeleton = () => (
   <div className="p-4 rounded-md bg-gray-100">
@@ -136,7 +138,6 @@ const calculateCalories = (protein, carbs, fat) => {
 // Static targets and units for each micronutrient
 const MICRONUTRIENT_TARGETS = {
   fiber: { target: 25, unit: 'g' },
-  sugar: { target: 36, unit: 'g' },
   sodium: { target: 2300, unit: 'mg' },
   vitaminA: { target: 3000, unit: 'mcg' },
   vitaminC: { target: 90, unit: 'mg' },
@@ -161,7 +162,6 @@ const MICRONUTRIENT_TARGETS = {
 const formatNutrientName = (key) => {
   const nameMap = {
     fiber:        'Fiber',
-    sugar:        'Sugar',
     sodium:       'Sodium',
     vitaminA:     'Vitamin A',
     vitaminC:     'Vitamin C',
@@ -862,6 +862,16 @@ export default function CoachReport({checkIns,loading,selectedClient}) {
               className="w-full"
             />
               }
+              {
+                checkIns?.aiReview?.[0]&&
+              <TabButton
+              tab="micro_trend"
+              icon={Utensils}
+              label="micro_trend"
+              isActive={activeTab === "micro_trend"}
+              className="w-full"
+            />
+              }
               <TabButton
               tab="selfieImages"
               icon= {Image}
@@ -1168,6 +1178,11 @@ export default function CoachReport({checkIns,loading,selectedClient}) {
             {activeTab === "selfieImages" && (
               <ImageCardForCoach uploadedImages={uploadedImages} loading={loadingImages}/>
             )}
+            {
+              activeTab ==="micro_trend" && (
+                <MicroTrendCoachTab selectedClient={selectedClient}/>
+              )
+            }
           </>
         )}
       </div>
