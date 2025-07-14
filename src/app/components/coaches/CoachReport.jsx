@@ -857,7 +857,7 @@ export default function CoachReport({checkIns,loading,selectedClient}) {
               <TabButton
               tab="micronutrients"
               icon={Utensils}
-              label="micronutrients"
+              label="Micronutrients"
               isActive={activeTab === "micronutrients"}
               className="w-full"
             />
@@ -867,7 +867,7 @@ export default function CoachReport({checkIns,loading,selectedClient}) {
               <TabButton
               tab="micro_trend"
               icon={Utensils}
-              label="micro_trend"
+              label="Micro_trends"
               isActive={activeTab === "micro_trend"}
               className="w-full"
             />
@@ -875,7 +875,7 @@ export default function CoachReport({checkIns,loading,selectedClient}) {
               <TabButton
               tab="selfieImages"
               icon= {Image}
-              label="selfieImages"
+              label="Selfie Images"
               isActive={activeTab === "selfieImages"}
               className="w-full"
               />
