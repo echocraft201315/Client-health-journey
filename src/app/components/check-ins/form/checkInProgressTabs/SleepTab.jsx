@@ -72,6 +72,7 @@ const SleepTab = ({ checkIns }) => {
                       timeZone: "UTC", // Keep tooltip label in UTC for clarity
                     });
                   }}
+                  formatter={(value, name) => [`${value} hrs`, name]}
                 />
                 <Line
                   dataKey="sleepHours"

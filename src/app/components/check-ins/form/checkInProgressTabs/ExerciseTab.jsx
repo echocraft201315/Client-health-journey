@@ -68,9 +68,9 @@ const ExerciseTab = ({ checkIns }) => {
                         timeZone: "UTC",
                       });
                     }}
-                    formatter={(value, name) => [value, name]} // optional: display value and name
+                    formatter={(value, name) => [`${value} mins`, name]} // display value with 'min' unit
                   />
-                  <Bar dataKey="energyLevel" fill="#2563eb" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="exerciseTime" fill="#2563eb" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
