@@ -124,6 +124,11 @@ const CheckInForm = () => {
       toast.error("Please log in to submit check-in data");
       return;
     }
+    // Prevent submission if selectedDate is empty
+    if (!data.selectedDate) {
+      toast.error("Please select a check-in date.");
+      return;
+    }
 
     // Check for required fields based on current tab
     const requiredFields = {
@@ -291,7 +296,7 @@ const CheckInForm = () => {
                 <Calendar
                   mode="single"
                   selected={formData.selectedDate}
-                  onSelect={(date) => setValue("selectedDate", date)}
+                  onSelect={(date) => setValue("selectedDate", date || new Date())}
                   initialFocus
                   disabled={(date) => {
                     const today = new Date();

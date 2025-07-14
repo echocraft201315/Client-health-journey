@@ -174,6 +174,11 @@ console.log("planId",planId)
   };
 
   const analyzeImages = async (index) => {
+    // Check for valid selectedDate
+    if (!formData.selectedDate) {
+      toast.error("Please select a check-in date before analyzing food images.");
+      return;
+    }
     const filesToAnalyze = imageFiles[index];
     const currentNutrition = getValues("nutrition");
     const currentItem = currentNutrition[index];
@@ -335,7 +340,7 @@ console.log("planId",planId)
                   <Button
                     type="button"
                     onClick={() => analyzeImages(index)}
-                    disabled={analyzingImages[index]}
+                    disabled={analyzingImages[index] || !formData.selectedDate}
                     className="flex items-center gap-2"
                   >
                     <Search className="h-4 w-4" />
