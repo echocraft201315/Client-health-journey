@@ -293,6 +293,11 @@ const CheckInForm = () => {
                   selected={formData.selectedDate}
                   onSelect={(date) => setValue("selectedDate", date)}
                   initialFocus
+                  disabled={(date) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return date > today;
+                  }}
                 />
               </PopoverContent>
             </Popover>
