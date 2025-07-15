@@ -111,7 +111,13 @@ const ClientList = ({ clients, fetchClients }) => {
                     if (client.lastCheckIn) {
                       return (
                         <>
-                          {!showOverdueBadge && new Date(client.lastCheckIn).toLocaleDateString()}
+                          {!showOverdueBadge && 
+                          new Intl.DateTimeFormat('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          timeZone: 'UTC'
+                            }).format(new Date(client.lastCheckIn))}
                           {showOverdueBadge && (
                             <Badge variant="destructive" className="ml-2 animate-pulse" aria-label="Overdue check-in warning">
                               {badgeText}
