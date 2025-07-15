@@ -10,8 +10,8 @@ export async function DELETE(request, { params }) {
     if (!client) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
-    const result = await userRepo.deleteClient(client.email);
     await clientProfileRepo.deleteClientProfile(client.id);
+    const result = await userRepo.deleteClient(client.email);
     return NextResponse.json({ status: true, result });
   } catch (error) {
     return NextResponse.json({ status: false, message: error.message });
