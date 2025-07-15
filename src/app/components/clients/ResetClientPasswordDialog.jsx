@@ -89,7 +89,7 @@ export const ResetClientPasswordDialog = ({
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isDeleting}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto mr-[15px]"
           >
             Cancel
           </Button>
