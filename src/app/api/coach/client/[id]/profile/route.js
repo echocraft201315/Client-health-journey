@@ -19,21 +19,31 @@ export async function GET(req, { params }) {
 }
 
 export async function POST(req, { params }) {
-    try{
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    const user = session.user;
-    if (user.role !== "coach" && user.role !== "clinic_admin") {
-        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        const user = session.user;
+        if (user.role !== "coach" && user.role !== "clinic_admin") {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        }
+        const { id } = params;
+        let { profileData, healthConditions, customRequests, coachingPrefs } = await req.json();
+        // Set default coachingPrefs if missing or empty
+        if (!coachingPrefs || Object.keys(coachingPrefs).length === 0) {
+            coachingPrefs = {
+                dailyTips: true,
+                foodWarnings: true,
+                symptomReminders: true,
+                coachingIntensity: "Moderate - Regular guidance",
+                preferredTipTime: "09:00",
+            };
+        }
+        const created = await clientProfileRepo.createClientProfile(id, profileData, healthConditions, customRequests, coachingPrefs);
+        return NextResponse.json({ status: true, profile: created });
     }
-    const { id } = params;
-    const { profileData, healthConditions, customRequests, coachingPrefs } = await req.json();
-    const created = await clientProfileRepo.createClientProfile(id, profileData, healthConditions, customRequests, coachingPrefs);
-    return NextResponse.json({ status:true, profile: created });
-}
-catch(error){
-    return NextResponse.json({status:false, message:error.message})
-}
+    catch (error) {
+        return NextResponse.json({ status: false, message: error.message })
+    }
 }
 
 export async function PUT(req, { params }) {

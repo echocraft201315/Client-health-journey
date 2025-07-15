@@ -2,9 +2,35 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "../ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Badge } from "../ui/badge";
 
 const ClientListItem = ({ client, handleViewProgram, hasActions, handleDeleteClient, handleResetClientPassword }) => {
   const router = useRouter();
+  console.log("client", client)
+  // Calculate overdue status
+  const now = new Date();
+  let showOverdueBadge = false;
+  let badgeText = "";
+  if (client.lastCheckIn) {
+    const lastCheckInDate = new Date(client.lastCheckIn);
+    const diffDays = (now - lastCheckInDate) / (1000 * 60 * 60 * 24);
+    if (diffDays > 3) {
+      showOverdueBadge = true;
+      badgeText = new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        timeZone: 'UTC'
+      }).format(lastCheckInDate);
+    }
+  } else if (client.startDate) {
+    const startDate = new Date(client.startDate);
+    const diffDays = (now - startDate) / (1000 * 60 * 60 * 24);
+    if (diffDays > 3) {
+      showOverdueBadge = true;
+      badgeText = "Never";
+    }
+  }
   return (
     <div
       key={client.id}
@@ -16,11 +42,32 @@ const ClientListItem = ({ client, handleViewProgram, hasActions, handleDeleteCli
         <h3 className="font-medium text-base sm:text-lg">{client.name}</h3>
         <p className="text-xs sm:text-sm text-gray-500">{client.email}</p>
       </div>
-      <div className="text-xs sm:text-sm text-gray-500">
+      <div className="text-xs sm:text-sm text-gray-500 flex items-center gap-2">
         Last check-in:{" "}
-        {client.lastCheckIn
-          ? new Date(client.lastCheckIn).toLocaleDateString()
-          : "Never"}
+        {client.lastCheckIn ? (
+          <>
+            {!showOverdueBadge &&
+            new Intl.DateTimeFormat('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              timeZone: 'UTC'
+            }).format(new Date(client.lastCheckIn))}
+            {showOverdueBadge && (
+              <Badge variant="destructive" className="ml-2 animate-pulse" aria-label="Overdue check-in warning">
+                {badgeText}
+              </Badge>
+            )}
+          </>
+        ) : (
+          showOverdueBadge ? (
+            <Badge variant="destructive" className="ml-2 animate-pulse" aria-label="Overdue check-in warning">
+              Never
+            </Badge>
+          ) : (
+            "Never"
+          )
+        )}
       </div>
       </div>
       {hasActions && (

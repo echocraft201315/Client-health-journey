@@ -9,8 +9,18 @@ import { Switch } from "@/app/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
-import { Plus, X, Settings, Heart, Activity, TrendingUp, Clock, FileText, Info } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/app/components/ui/dialog"
+import { Plus, X, Settings, Heart, Activity, TrendingUp, Clock, FileText, Info, Pencil, Trash2 } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/app/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/app/components/ui/alert-dialog";
 
 // Helper to safely parse JSON fields
 function safeParseJSON(val, fallback) {
@@ -39,6 +49,16 @@ export default function HealthManagementApp() {
   const [isAddCustomConditionModalOpen, setIsAddCustomConditionModalOpen] = useState(false);
   const [customCondition, setCustomCondition] = useState({});
   const [noProfile, setNoProfile] = useState(false);
+  const [editingCondition, setEditingCondition] = useState(null);
+  const [isEditConditionModalOpen, setIsEditConditionModalOpen] = useState(false);
+  const [editConditionForm, setEditConditionForm] = useState({ name: "", description: "" });
+  const [deletingCondition, setDeletingCondition] = useState(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [editingCustomRequest, setEditingCustomRequest] = useState(null);
+  const [isEditCustomRequestModalOpen, setIsEditCustomRequestModalOpen] = useState(false);
+  const [editCustomRequestForm, setEditCustomRequestForm] = useState({ condition: "", severity: "", diagnosisDate: "", notes: "" });
+  const [deletingCustomRequest, setDeletingCustomRequest] = useState(null);
+  const [isDeleteCustomRequestDialogOpen, setIsDeleteCustomRequestDialogOpen] = useState(false);
 
   // Helper to fetch and set profile from backend
   const fetchAndSetProfile = async () => {
@@ -81,7 +101,8 @@ export default function HealthManagementApp() {
     if (id) fetchAndSetProfile();
     // eslint-disable-next-line
   }, [id]);
-console.log("profiledata",profileData)
+
+
   // Save changes to profile (update backend with local frontend variables)
   const handleSaveChanges = async () => {
     setLoading(true);
@@ -234,6 +255,85 @@ console.log("profiledata",profileData)
   console.log("customRequests in render", parsedCustomRequests, typeof parsedCustomRequests);
   console.log("coachingPrefs in render", parsedCoachingPrefs, typeof parsedCoachingPrefs);
 
+  const openEditConditionModal = (condition) => {
+    setEditingCondition(condition);
+    setEditConditionForm({ name: condition.name, description: condition.description });
+    setIsEditConditionModalOpen(true);
+  };
+  const closeEditConditionModal = () => {
+    setIsEditConditionModalOpen(false);
+    setEditingCondition(null);
+  };
+  const handleEditConditionChange = (field, value) => {
+    setEditConditionForm((prev) => ({ ...prev, [field]: value }));
+  };
+  const saveEditedCondition = () => {
+    setHealthConditions((prev) =>
+      prev.map((c) =>
+        (c.id || c.name) === (editingCondition.id || editingCondition.name)
+          ? { ...c, ...editConditionForm }
+          : c
+      )
+    );
+    closeEditConditionModal();
+  };
+  const openDeleteConditionDialog = (condition) => {
+    setDeletingCondition(condition);
+    setIsDeleteDialogOpen(true);
+  };
+  const closeDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+    setDeletingCondition(null);
+  };
+  const confirmDeleteCondition = () => {
+    setHealthConditions((prev) =>
+      prev.filter((c) => (c.id || c.name) !== (deletingCondition.id || deletingCondition.name))
+    );
+    closeDeleteDialog();
+  };
+
+  const openEditCustomRequestModal = (request) => {
+    setEditingCustomRequest(request);
+    setEditCustomRequestForm({
+      condition: request.condition || "",
+      severity: request.severity || "",
+      diagnosisDate: request.diagnosisDate || "",
+      notes: request.notes || "",
+    });
+    setIsEditCustomRequestModalOpen(true);
+  };
+  const closeEditCustomRequestModal = () => {
+    setIsEditCustomRequestModalOpen(false);
+    setEditingCustomRequest(null);
+  };
+  const handleEditCustomRequestChange = (field, value) => {
+    setEditCustomRequestForm((prev) => ({ ...prev, [field]: value }));
+  };
+  const saveEditedCustomRequest = () => {
+    setCustomRequests((prev) =>
+      prev.map((r) =>
+        (r.id || r.condition) === (editingCustomRequest.id || editingCustomRequest.condition)
+          ? { ...r, ...editCustomRequestForm }
+          : r
+      )
+    );
+    closeEditCustomRequestModal();
+  };
+  const openDeleteCustomRequestDialog = (request) => {
+    setDeletingCustomRequest(request);
+    setIsDeleteCustomRequestDialogOpen(true);
+  };
+  const closeDeleteCustomRequestDialog = () => {
+    setIsDeleteCustomRequestDialogOpen(false);
+    setDeletingCustomRequest(null);
+  };
+  const confirmDeleteCustomRequest = () => {
+    setCustomRequests((prev) =>
+      prev.filter((r) => (r.id || r.condition) !== (deletingCustomRequest.id || deletingCustomRequest.condition))
+    );
+    closeDeleteCustomRequestDialog();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -384,7 +484,7 @@ console.log("profiledata",profileData)
             </CardHeader>
             <CardContent className="space-y-4">
                   {parsedCustomRequests.map((request) => (
-                <div key={request.id} className="p-4 border rounded-lg bg-gray-50">
+                <div key={request.id || request.condition} className="p-4 border rounded-lg bg-gray-50">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
@@ -394,6 +494,24 @@ console.log("profiledata",profileData)
                       <p className="text-sm text-gray-600">Severity: {request.severity}</p>
                       <p className="text-sm text-gray-600">Diagnosis Date: {request.diagnosisDate}</p>
                       <p className="text-sm text-gray-600">Notes: {request.notes}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Edit"
+                        onClick={() => openEditCustomRequestModal(request)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Delete"
+                        onClick={() => openDeleteCustomRequestDialog(request)}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -413,9 +531,31 @@ console.log("profiledata",profileData)
               <CardContent className="space-y-4">
                     {parsedHealthConditions.map((condition, idx) => (
                   <div key={condition.id || idx} className="p-4 border rounded-lg bg-white">
-                    <div className="flex flex-col">
-                      <h3 className="font-medium text-gray-900">{condition.name}</h3>
-                      <p className="text-sm text-gray-600">{condition.description}</p>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium text-gray-900">{condition.name}</h3>
+                          <p className="text-sm text-gray-600">{condition.description}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Edit"
+                            onClick={() => openEditConditionModal(condition)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Delete"
+                            onClick={() => openDeleteConditionDialog(condition)}
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -866,6 +1006,108 @@ console.log("profiledata",profileData)
             </div>
           </DialogContent>
         </Dialog>
+        {/* Edit Condition Modal */}
+        <Dialog open={isEditConditionModalOpen} onOpenChange={setIsEditConditionModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Health Condition</DialogTitle>
+              <DialogDescription>Update the details for this condition.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <label className="block text-sm font-medium">Name</label>
+              <Input
+                value={editConditionForm.name}
+                onChange={(e) => handleEditConditionChange("name", e.target.value)}
+                className="mb-2"
+              />
+              <label className="block text-sm font-medium">Description</label>
+              <Input
+                value={editConditionForm.description}
+                onChange={(e) => handleEditConditionChange("description", e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button onClick={saveEditedCondition}>Save</Button>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Health Condition?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this condition? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={closeDeleteDialog}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteCondition} className="bg-red-600 hover:bg-red-700">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        {/* Edit Custom Request Modal */}
+        <Dialog open={isEditCustomRequestModalOpen} onOpenChange={setIsEditCustomRequestModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Custom Condition Request</DialogTitle>
+              <DialogDescription>Update the details for this custom request.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <label className="block text-sm font-medium">Condition</label>
+              <Input
+                value={editCustomRequestForm.condition}
+                onChange={(e) => handleEditCustomRequestChange("condition", e.target.value)}
+                className="mb-2"
+              />
+              <label className="block text-sm font-medium">Severity</label>
+              <Input
+                value={editCustomRequestForm.severity}
+                onChange={(e) => handleEditCustomRequestChange("severity", e.target.value)}
+                className="mb-2"
+              />
+              <label className="block text-sm font-medium">Diagnosis Date</label>
+              <Input
+                value={editCustomRequestForm.diagnosisDate}
+                onChange={(e) => handleEditCustomRequestChange("diagnosisDate", e.target.value)}
+                className="mb-2"
+              />
+              <label className="block text-sm font-medium">Notes</label>
+              <Input
+                value={editCustomRequestForm.notes}
+                onChange={(e) => handleEditCustomRequestChange("notes", e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button onClick={saveEditedCustomRequest}>Save</Button>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        {/* Delete Custom Request Confirmation Dialog */}
+        <AlertDialog open={isDeleteCustomRequestDialogOpen} onOpenChange={setIsDeleteCustomRequestDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Custom Condition Request?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this custom request? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={closeDeleteCustomRequestDialog}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteCustomRequest} className="bg-red-600 hover:bg-red-700">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
           </>
         )}
         {/* Save Changes Button */}

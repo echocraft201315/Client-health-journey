@@ -15,6 +15,7 @@ import { Button } from "../ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { DeleteClientDialog } from "./DeleteClientDialog";
 import { ResetClientPasswordDialog } from "./ResetClientPasswordDialog";
+import { useRouter } from "next/navigation";
 
 const ClientList = ({ clients, fetchClients }) => {
   const [isCoachDetailsOpen, setIsCoachDetailsOpen] = useState(false);
@@ -22,7 +23,7 @@ const ClientList = ({ clients, fetchClients }) => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [isDeleteClientDialogOpen, setIsDeleteClientDialogOpen] = useState(false);
   const [isResetClientPasswordDialogOpen, setIsResetClientPasswordDialogOpen] = useState(false);
-
+  const router = useRouter();
   const handleViewCoach = (client) => {
     setSelectedClient(client);
     setIsCoachDetailsOpen(true);
@@ -64,8 +65,12 @@ const ClientList = ({ clients, fetchClients }) => {
                 key={client.id}
                 className="hover:bg-gray-50 cursor-pointer"
               >
-                <TableCell className="font-medium">{client.name}</TableCell>
-                <TableCell>{client.email}</TableCell>
+                <TableCell className="font-medium"
+                      onClick={() => router.push(`/coach/clients/${client.id}`)}
+                >{client.name}</TableCell>
+                <TableCell
+                      onClick={() => router.push(`/coach/clients/${client.id}`)}
+                >{client.email}</TableCell>
                 <TableCell className="hover:bg-[#c4c4c4]" onClick={() => handleViewCoach(client)}>
                   <span style={{ display: "inline-flex", alignItems: "center" }}>
                     <Eye style={{ marginRight: 8 }} size={18} className="text-[#5298f5]"/>
@@ -79,16 +84,51 @@ const ClientList = ({ clients, fetchClients }) => {
                   </span>
                 </TableCell>
                 <TableCell>
-                  {client.lastCheckIn ? (
-                    new Date(client.lastCheckIn).toLocaleDateString()
-                  ) : (
-                    <Badge
-                      variant="outline"
-                      className="bg-amber-100 text-amber-800"
-                    >
-                      No check-ins
-                    </Badge>
-                  )}
+                  {(() => {
+                    const now = new Date();
+                    let showOverdueBadge = false;
+                    let badgeText = "";
+                    if (client.lastCheckIn) {
+                      const lastCheckInDate = new Date(client.lastCheckIn);
+                      const diffDays = (now - lastCheckInDate) / (1000 * 60 * 60 * 24);
+                      if (diffDays > 3) {
+                        showOverdueBadge = true;
+                        badgeText = new Intl.DateTimeFormat('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          timeZone: 'UTC'
+                        }).format(lastCheckInDate);
+                      }
+                    } else if (client.startDate) {
+                      const startDate = new Date(client.startDate);
+                      const diffDays = (now - startDate) / (1000 * 60 * 60 * 24);
+                      if (diffDays > 3) {
+                        showOverdueBadge = true;
+                        badgeText = "No check-ins";
+                      }
+                    }
+                    if (client.lastCheckIn) {
+                      return (
+                        <>
+                          {!showOverdueBadge && new Date(client.lastCheckIn).toLocaleDateString()}
+                          {showOverdueBadge && (
+                            <Badge variant="destructive" className="ml-2 animate-pulse" aria-label="Overdue check-in warning">
+                              {badgeText}
+                            </Badge>
+                          )}
+                        </>
+                      );
+                    } else {
+                      return showOverdueBadge ? (
+                        <Badge variant="destructive" className="ml-2 animate-pulse" aria-label="Overdue check-in warning">
+                          No check-ins
+                        </Badge>
+                      ) : (
+                        <span>No check-ins</span>
+                      );
+                    }
+                  })()}
                 </TableCell>
                 {hasActions && (
                   <TableCell>
