@@ -35,9 +35,8 @@ const ClientListItem = ({ client, handleViewProgram, hasActions, handleDeleteCli
     <div
       key={client.id}
       className="flex sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 border rounded-md hover:bg-gray-50 cursor-pointer gap-2 sm:gap-0"
-      onClick={() => router.push(`/coach/clients/${client.id}`)}
     >
-      <div>
+      <div onClick={() => router.push(`/coach/clients/${client.id}`)}>
       <div>
         <h3 className="font-medium text-base sm:text-lg">{client.name}</h3>
         <p className="text-xs sm:text-sm text-gray-500">{client.email}</p>
