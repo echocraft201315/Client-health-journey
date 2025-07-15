@@ -36,7 +36,7 @@ const ClientListItem = ({ client, handleViewProgram, hasActions, handleDeleteCli
       key={client.id}
       className="flex sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 border rounded-md hover:bg-gray-50 cursor-pointer gap-2 sm:gap-0"
     >
-      <div onClick={() => router.push(`/coach/clients/${client.id}`)}>
+      <div onClick={() => router.push(`/coach/clients/${client.id}`)} className="flex-1">
       <div>
         <h3 className="font-medium text-base sm:text-lg">{client.name}</h3>
         <p className="text-xs sm:text-sm text-gray-500">{client.email}</p>
@@ -70,6 +70,7 @@ const ClientListItem = ({ client, handleViewProgram, hasActions, handleDeleteCli
       </div>
       </div>
       {hasActions && (
+
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
