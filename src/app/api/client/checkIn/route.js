@@ -134,25 +134,32 @@ IMPORTANT: Respond with ONLY a valid JSON object in this exact format(not includ
   ],
   "message": string
 }
- - The number of items in the mealRecommendation array must exactly match the number of portion guidelines in the program, regardless of user check-in length.
-
-- For each item:
-
-The values for proteinPortion, carbsPortion, and fatsPortion must be the converted (oz → grams) protein, carbs and fats values from the corresponding portion_guidelines item in program. (Round to the nearest whole gram.)
-
-Recipes and ingredients should respect any food preferences given in the user’s check-in.
-
-Strictly follow the food guidelines described in the program.
-
-In the ingredients field, calculate and state the actual weight (in oz) of each food selected for the meal that would provide the prescribed proteinPortion, carbsPortion, and fatsPortion. (Example: "12.5 oz cooked chicken breast (to provide 113g protein), 7.1 oz cooked brown rice (to provide 56g carbs), 0.53 oz olive oil (to provide 15g fat), plus mixed vegetables.")
-
-Do NOT list just gram values of macros—list the weights of real foods as required to reach the target macronutrients.
-
-Use standard/common macro values (e.g., chicken breast ≈ 32g protein per 100g cooked; cooked rice ≈ 28g carbs per 100g, etc.).
-
-If you use multiple foods for a macro, combine their weights.
-
-Ensure each meal’s ingredients, macro content, and food choices are realistic and reflect the program’s food guidelines, goals, cooking methods, recommended protein, recommended carbs, recommended fats, food alergies, food_avoid and any user-specific rules.
+- For meal recommendation output, follow these rules:
+  The number of items in the mealRecommendation array must exactly match the number of portion guidelines in the program, regardless of user check-in length.
+  For each item in portion_guidelines:
+  Convert protein, carbs, and fats from oz (as in portion_guidelines in Program) to grams (proteinPortion, carbsPortion, fatsPortion fields), rounding to the nearest whole gram.
+  Ingredients Field:
+  Calculate and state the actual weight (in ounces, rounded to one decimal place) of each real food required to provide AT LEAST the prescribed proteinPortion, carbsPortion, and fatsPortion.
+  For each food, specify:
+  "{X} oz {food} (provides {Y}g {macronutrient})"
+  Use accurate macro values (examples:
+  cooked chicken breast ≈ 9.1g protein/oz (32g/100g)
+  cooked turkey breast ≈ 8.5g protein/oz (30g/100g)
+  cooked brown rice ≈ 7.9g carbs/oz (28g/100g)
+  cooked quinoa ≈ 6.0g carbs/oz (21g/100g)
+  cooked sweet potato ≈ 6.1g carbs/oz (21.5g/100g)
+  olive oil: 28g fat/oz
+  avocado: 4.6g fat/oz (16g/100g)
+  )—update as needed for regional/brand/real-food context.
+  If more than one food is used for a macro, list each food and its weight.
+  Do NOT list only macro values or total grams—show precise food weights.
+  The combined weight(s) of each food group must yield AT LEAST the target macro for proteinPortion, carbsPortion, fatsPortion (never excess acceptable; a slight under-provide).
+  Strictly follow food guidelines, cooking method rules, nutritional targets, food allergies, and food_avoid instructions from the program and user.
+  Ensure all meal ingredients and macro calculations are realistic, verifiable, and appropriate for the program's guidelines and the user's data.
+  If using mixed vegetables or condiments, list them as "plus {vegetables/condiments}," but prioritize macro-supplying foods in weight (oz) for the main macros.
+  Never pattern-match, estimate, or use generic/rounded serving sizes without calculation. Always calculate exact weights from true macro values.
+  Example ingredients field (for a single meal):
+  "12.5 oz cooked chicken breast (provides 113g protein), 7.1 oz cooked brown rice (provides 56g carbs), 0.53 oz olive oil (provides 15g fat), plus mixed vegetables."
 
 - Output must be in valid JSON only, no additional non-JSON explanation.
 3. Additional Notes:
