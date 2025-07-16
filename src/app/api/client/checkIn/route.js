@@ -134,7 +134,16 @@ IMPORTANT: Respond with ONLY a valid JSON object in this exact format(not includ
   ],
   "message": string
 }
-  -The number of items in the mealRecommendation array must be the same as the number of portion guidelines defined in the program (not just the check-in), and each recommendation must strictly follow the program’s portion and food guidelines.
+ - The number of items in the mealRecommendation array must exactly match the number of portion guidelines in the program, regardless of user check-in length.
+
+- For each item:
+
+The values for proteinPortion, carbsPortion, and fatsPortion must be the converted (oz → grams) protein, carbs and fats values from the corresponding portion_guidelines item in program. (Round to the nearest whole gram.)
+
+The portions stated in the ingredient list must match the expected values to get their respective macronutrients.
+Each meal must strictly follow the food guidelines stated in the program.
+
+- Output must be in valid JSON only, no additional non-JSON explanation.
 3. Additional Notes:
 - During meal analyses, AI should not only check nutrients, but also compare them against the allergies and preferences. If it finds a potential issue, then include an appropriate warning with the In mealReview and mealRecomendation.
 - Include numerical results wherever possible (e.g., grams, ounces, hours).
