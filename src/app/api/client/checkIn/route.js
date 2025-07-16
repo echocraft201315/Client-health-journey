@@ -134,10 +134,14 @@ IMPORTANT: Respond with ONLY a valid JSON object in this exact format(not includ
   ],
   "message": string
 }
+For meal recommendation output, follow these rules:
+
+The number of items in the mealRecommendation array must exactly match the number of portion guidelines in the program, regardless of user check-in length.
+
 - For meal recommendation output, follow these rules:
   The number of items in the mealRecommendation array must exactly match the number of portion guidelines in the program, regardless of user check-in length.
-  For each item in portion_guidelines:
-  Convert protein, carbs, and fats from oz (as in portion_guidelines in Program) to grams (proteinPortion, carbsPortion, fatsPortion fields), rounding to the nearest whole gram.
+  For each item in mealRecommendation:
+The values for proteinPortion, carbsPortion, and fatsPortion must be the converted (oz → grams) protein, carbs and fats values from the corresponding portion_guidelines item in program. (Round to the nearest whole gram.)
   Ingredients Field:
   Calculate and state the actual weight (in ounces, rounded to one decimal place) of each real food required to provide AT LEAST the prescribed proteinPortion, carbsPortion, and fatsPortion.
   For each food, specify:
@@ -158,9 +162,10 @@ IMPORTANT: Respond with ONLY a valid JSON object in this exact format(not includ
   Ensure all meal ingredients and macro calculations are realistic, verifiable, and appropriate for the program's guidelines and the user's data.
   If using mixed vegetables or condiments, list them as "plus {vegetables/condiments}," but prioritize macro-supplying foods in weight (oz) for the main macros.
   Never pattern-match, estimate, or use generic/rounded serving sizes without calculation. Always calculate exact weights from true macro values.
+The sum of protein, carbs, and fat from all listed ingredients must never exceed the proteinPortion, carbsPortion, and fatsPortion values for the meal recommendation.
   Example ingredients field (for a single meal):
   "12.5 oz cooked chicken breast (provides 113g protein), 7.1 oz cooked brown rice (provides 56g carbs), 0.53 oz olive oil (provides 15g fat), plus mixed vegetables."
-
+  
 - Output must be in valid JSON only, no additional non-JSON explanation.
 3. Additional Notes:
 - During meal analyses, AI should not only check nutrients, but also compare them against the allergies and preferences. If it finds a potential issue, then include an appropriate warning with the In mealReview and mealRecomendation.
