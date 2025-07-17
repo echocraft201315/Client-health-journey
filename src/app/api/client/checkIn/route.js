@@ -140,10 +140,10 @@ IMPORTANT: Respond with ONLY a valid JSON object in this exact format(not includ
 - In client Profile there are some data, foodAllergies, dietaryPreference, healthCondition, customRequests.
   The client's Today meal check-in data should be compared with the client's profile data.
   If the AI identified any issues , then include an appropriate warning with the In today_Review_and_Recommendation, mealReview and mealRecomendation.
-  For example, if the client has a food allergy to eggs and check-in data has eggs, then the AI should warn the client about the allergy in today_Review_and_Recommendation, mealReview and not recommend eggs in the mealRecommendation.
-  If the client has a dietary preference for vegetarian and check-in data has meat, then the AI should warn the client about the preference in today_Review_and_Recommendation, mealReview and not recommend meat in the mealRecommendation.
-  If the client has a health condition like diabetes and check-in data has high-sugar foods, then the AI should warn the client about the condition in today_Review_and_Recommendation, mealReview and not recommend high-sugar foods in the mealRecommendation.
-  If the client has a custom request like "Arthritis" and check-in data has dairy products, then the AI should warn the client about the request in today_Review_and_Recommendation, mealReview and not recommend dairy products in the mealRecommendation.
+  For example, if the client has a food allergy to eggs and check-in data has eggs, then the AI should warn strongly the client about the allergy in today_Review_and_Recommendation, mealReview and not recommend eggs in the mealRecommendation.
+  If the client has a dietary preference for vegetarian and check-in data has meat, then the AI should warn strongly the client about the preference in today_Review_and_Recommendation, mealReview and not recommend meat in the mealRecommendation.
+  If the client Profile has a healthCondition like diabetes and check-in data has high-sugar foods, then the AI should warn strongly the client in today_Review_and_Recommendation, mealReview and not recommend high-sugar foods in the mealRecommendation.
+  If the client Profile has a customRequest like "Fibromyalgia" and check-in data has sausage, then the AI should warn strongly the client in today_Review_and_Recommendation, mealReview and not recommend dairy products in the mealRecommendation.
 - For meal recommendation output, follow these rules:
 Reference the client Profile data and Program data.
 The number of items in the mealRecommendation array must exactly match the number of portion guidelines in the program, regardless of user check-in length.
