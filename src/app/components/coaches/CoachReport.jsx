@@ -920,17 +920,17 @@ export default function CoachReport({checkIns,loading,selectedClient}) {
                 <Card className="p-4">
                   <h2 className="font-semibold mb-4">Today's Macros</h2>
                   <div className="space-y-2">
-                    <MacroBar label="Protein" current={currentPortion?.proteinPortion} total={Math.floor(28.35*portionRule?.protein)} />
-                    <MacroBar label="Fruit" current={currentPortion?.fruitPortion} total={Math.floor(28.35*portionRule?.fruit)} />
-                    <MacroBar label="Vegetables" current={currentPortion?.vegetablesPortion} total={Math.floor(28.35*portionRule?.vegetables)} />
+                    <MacroBar label="Protein" current={currentPortion?.proteinPortion} total={Math.floor(portionRule?.protein)} />
+                    <MacroBar label="Fruit" current={currentPortion?.fruitPortion} total={Math.floor(portionRule?.fruit)} />
+                    <MacroBar label="Vegetables" current={currentPortion?.vegetablesPortion} total={Math.floor(portionRule?.vegetables)} />
                     <MacroBar
                       label="Carbs"
                       current={Number(currentPortion?.carbsPortion?.toFixed(0))}
-                      total={Math.floor(28.35*portionRule?.carbs)}
+                      total={Math.floor(portionRule?.carbs)}
                       unit="g"
                     />
-                    <MacroBar label="Fats" current={currentPortion?.fatsPortion} total={Math.floor(28.35*portionRule?.fats)} />
-                    <MacroBar label="Other" current={currentPortion?.otherPortion} total={Math.floor(28.35*portionRule?.other)} />
+                    <MacroBar label="Fats" current={currentPortion?.fatsPortion} total={Math.floor(portionRule?.fats)} />
+                    <MacroBar label="Other" current={currentPortion?.otherPortion} total={Math.floor(portionRule?.other)} />
                   </div>
                 </Card>
               </div>

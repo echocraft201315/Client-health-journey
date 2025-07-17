@@ -723,7 +723,7 @@ export default function ProgramDetailsCard({
                       name={`portionGuidelines.${index}.protein`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Protein (oz)</FormLabel>
+                          <FormLabel>Protein (g)</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -736,7 +736,7 @@ export default function ProgramDetailsCard({
                       name={`portionGuidelines.${index}.fruit`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Fruit (oz)</FormLabel>
+                          <FormLabel>Fruit (g)</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -749,7 +749,7 @@ export default function ProgramDetailsCard({
                       name={`portionGuidelines.${index}.vegetables`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Vegetables (oz)</FormLabel>
+                          <FormLabel>Vegetables (g)</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -762,7 +762,7 @@ export default function ProgramDetailsCard({
                       name={`portionGuidelines.${index}.carbs`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Carbs (oz)</FormLabel>
+                          <FormLabel>Carbs (g)</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -775,7 +775,7 @@ export default function ProgramDetailsCard({
                       name={`portionGuidelines.${index}.fats`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Fats (oz)</FormLabel>
+                          <FormLabel>Fats (g)</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -788,7 +788,7 @@ export default function ProgramDetailsCard({
                       name={`portionGuidelines.${index}.other`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Other (oz)</FormLabel>
+                          <FormLabel>Other (g)</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>

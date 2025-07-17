@@ -222,27 +222,27 @@ const MyProgram = () => {
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
                                   <p className="text-sm text-gray-500">Protein</p>
-                                  <p className="font-medium">{guideline.protein || '-'} oz</p>
+                                  <p className="font-medium">{guideline.protein || '-'} g</p>
                                 </div>
                                 <div>
                                   <p className="text-sm text-gray-500">Fruit</p>
-                                  <p className="font-medium">{guideline.fruit || '-'} oz</p>
+                                  <p className="font-medium">{guideline.fruit || '-'} g</p>
                                 </div>
                                 <div>
                                   <p className="text-sm text-gray-500">Vegetables</p>
-                                  <p className="font-medium">{guideline.vegetables || '-'} oz</p>
+                                  <p className="font-medium">{guideline.vegetables || '-'} g</p>
                                 </div>
                                 <div>
                                   <p className="text-sm text-gray-500">Carbs</p>
-                                  <p className="font-medium">{guideline.carbs || '-'} oz</p>
+                                  <p className="font-medium">{guideline.carbs || '-'} g</p>
                                 </div>
                                 <div>
                                   <p className="text-sm text-gray-500">Fats</p>
-                                  <p className="font-medium">{guideline.fats || '-'} oz</p>
+                                  <p className="font-medium">{guideline.fats || '-'} g</p>
                                 </div>
                                 <div>
                                   <p className="text-sm text-gray-500">Other</p>
-                                  <p className="font-medium">{guideline.other || '-'} oz</p>
+                                  <p className="font-medium">{guideline.other || '-'} g</p>
                                 </div>
                                 <div className="col-span-2">
                                   <p className="text-sm text-gray-500">Calories</p>

@@ -693,12 +693,12 @@ export function EditTemplateDialogue({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Protein(oz)</TableHead>
-                      <TableHead>Fruit(oz)</TableHead>
-                      <TableHead>Vegetables(oz)</TableHead>
-                      <TableHead>Carbs(oz)</TableHead>
-                      <TableHead>Fats(oz)</TableHead>
-                      <TableHead>Other(oz)</TableHead>
+                      <TableHead>Protein(g)</TableHead>
+                      <TableHead>Fruit(g)</TableHead>
+                      <TableHead>Vegetables(g)</TableHead>
+                      <TableHead>Carbs(g)</TableHead>     
+                      <TableHead>Fats(g)</TableHead>
+                      <TableHead>Other(g)</TableHead>
                       <TableHead>Calories</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
