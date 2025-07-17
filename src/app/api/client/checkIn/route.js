@@ -70,6 +70,9 @@ export async function POST(request) {
     );
     if (plan.id === "pro") {
       const program = await programRepo.getProgrambyClientEmail(email);
+      const clientId = await clientRepo.getClientIdbyEmail(email);
+      const clientProfile = await clientRepo.getClientProfilebyId(clientId);
+      const jsonClientProfile = JSON.stringify(clientProfile);
       const jsonProgram = JSON.stringify(program);
       const jsonCheckIn = JSON.stringify({
         name,
@@ -102,10 +105,10 @@ You are a world-class digital health coach AI. Your task is to analyze a client�
 - Client’s Submitted Today Check-In Data (JSON): ${jsonCheckIn}
 - Client’s Submitted Weekly Check-In Data (JSON): ${JSON.stringify(progressData)}
 - Program Details (JSON): ${jsonProgram}
-
+- Client Profile (JSON): ${jsonClientProfile}
 2. Instructions:
 - Analyze all client health metrics (weight, sleep(hours), mood, exercise(minutes), hydration, etc.) comparing them against the program’s goals and guidelines.
-- Evaluate meal portions (protein, carbs, fats, vegetables)(unit gram) for alignment with program nutrition guidelines(unit ounce).
+- Evaluate meal portions (protein, carbs, fats, vegetables) for alignment with program nutrition guidelines.
 - Identify strengths and areas needing improvement.
 - Generate personalized feedback with:
 - Positive yet realistic daily and weekly evaluation sentences.
@@ -134,7 +137,15 @@ IMPORTANT: Respond with ONLY a valid JSON object in this exact format(not includ
   ],
   "message": string
 }
+- In client Profile there are some data, foodAllergies, dietaryPreference, healthCondition, customRequests.
+  The client's Today meal check-in data should be compared with the client's profile data.
+  If the AI identified any issues , then include an appropriate warning with the In today_Review_and_Recommendation, mealReview and mealRecomendation.
+  For example, if the client has a food allergy to eggs and check-in data has eggs, then the AI should warn the client about the allergy in today_Review_and_Recommendation, mealReview and not recommend eggs in the mealRecommendation.
+  If the client has a dietary preference for vegetarian and check-in data has meat, then the AI should warn the client about the preference in today_Review_and_Recommendation, mealReview and not recommend meat in the mealRecommendation.
+  If the client has a health condition like diabetes and check-in data has high-sugar foods, then the AI should warn the client about the condition in today_Review_and_Recommendation, mealReview and not recommend high-sugar foods in the mealRecommendation.
+  If the client has a custom request like "Arthritis" and check-in data has dairy products, then the AI should warn the client about the request in today_Review_and_Recommendation, mealReview and not recommend dairy products in the mealRecommendation.
 - For meal recommendation output, follow these rules:
+Reference the client Profile data and Program data.
 The number of items in the mealRecommendation array must exactly match the number of portion guidelines in the program, regardless of user check-in length.
 For each item in mealRecommendation:
 The values for "proteinPortion", "carbsPortion", and "fatsPortion" must be the "protein", "carbs", and "fats" values from the corresponding portion_guidelines item in the program. (Round to the nearest whole gram.)
@@ -167,7 +178,6 @@ Never pattern-match, estimate, or use generic/rounded serving sizes without calc
 
 - Output must be in valid JSON only, no additional non-JSON explanation.
 3. Additional Notes:
-- During meal analyses, AI should not only check nutrients, but also compare them against the allergies and preferences. If it finds a potential issue, then include an appropriate warning with the In mealReview and mealRecomendation.
 - Include numerical results wherever possible (e.g., grams, ounces, hours).
 - Highlight achievements (e.g., hitting protein goals, consistent exercise) and weak points.
 - Use emojis and icons to make feedback engaging and clear.
@@ -175,6 +185,7 @@ Never pattern-match, estimate, or use generic/rounded serving sizes without calc
 - Ensure recommendations vary each time for freshness.
 - the calories in checkIn data should be smaller than the each calories in program's portionGuidelines
 - End with a motivational message encouraging the client to keep progressing.
+
 All checkIn review and recommendation must be based on program totally.
     `;
 
