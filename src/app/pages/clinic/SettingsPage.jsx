@@ -19,9 +19,7 @@ import {
 } from "../../components/ui/tabs";
 import { Switch } from "../../components/ui/switch";
 import { useAuth } from "@/app/context/AuthContext";
-import { SubscriptionPlan } from "@/app/lib/stack";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
 import { useClinic } from "@/app/context/ClinicContext";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -48,15 +46,13 @@ const SettingsPage = () => {
     weeklyReports: true,
   });
 
-  const [isUpdatingSubscription, setIsUpdatingSubscription] = useState(false);
-  const { planId, currentPlan, setCurrentPlan } = useClinic();
   const router = useRouter();
 
   useEffect(() => {
     setProfileForm({
       name: user?.name || "HealthTracker Admin",
       email: user?.email || "",
-      phone: user?.phoneNumber || "", // Safe to use now that we've added it to the UserData type
+      phone: user?.phoneNumber || "",
       origin: user?.email || ""
     });
   }, [user]);
@@ -134,40 +130,6 @@ const SettingsPage = () => {
     });
   };
 
-  const handleSubscriptionChange = async (newPlan) => {
-    try {
-      setIsUpdatingSubscription(true);
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          newPlan,
-          currentPlan: planId,
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        if (data.url) {
-          router.push(data.url);
-        } else {
-          toast.success(`Successfully Send Request for ${newPlan === 'pro' ? 'upgrading' : 'downgrading'} to ${newPlan} plan`);
-          setCurrentPlan(newPlan);
-        }
-      } else {
-        toast.error(data.message || 'Failed to update subscription');
-      }
-    } catch (error) {
-      console.error('Error updating subscription:', error);
-      toast.error('An error occurred while updating your subscription');
-    } finally {
-      setIsUpdatingSubscription(false);
-    }
-  };
-
   return (
     <div className="px-2 sm:px-4 md:px-6 py-4 w-full max-w-3xl mx-auto">
       <div className="mb-6">
@@ -176,11 +138,10 @@ const SettingsPage = () => {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList className="grid w-full max-w-md grid-cols-2 sm:grid-cols-4">
+        <TabsList className="grid w-full max-w-md grid-cols-2 sm:grid-cols-3">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="subscription">Subscription</TabsTrigger>
         </TabsList>
 
         {/* Profile Tab */}
@@ -238,7 +199,7 @@ const SettingsPage = () => {
 
         {/* Security Tab */}
         <TabsContent value="security">
-          <Card>
+          <Card className="w-full max-w-xl mx-auto">
             <CardHeader>
               <CardTitle>Security Settings</CardTitle>
               <CardDescription>
@@ -300,7 +261,7 @@ const SettingsPage = () => {
 
         {/* Notifications Tab */}
         <TabsContent value="notifications">
-          <Card>
+          <Card className="w-full max-w-xl mx-auto">
             <CardHeader>
               <CardTitle>Notification Preferences</CardTitle>
               <CardDescription>
@@ -366,63 +327,6 @@ const SettingsPage = () => {
                     handleNotificationChange("weeklyReports")
                   }
                 />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="subscription">
-          <Card className="bg-transparent border-none shadow-none">
-            <CardHeader>
-              <CardTitle>Subscription</CardTitle>
-              <CardDescription>
-                Choose the plan that best fits your clinic's needs.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch">
-                {SubscriptionPlan.map((plan) => {
-                  const isCurrent = planId === plan.id;
-                  const isRequest = currentPlan === plan.id;
-                  return (
-                    <div
-                      key={plan.id}
-                      className={`flex-1 rounded-2xl border border-gray-200 bg-white p-6 flex flex-col min-w-[260px] max-w-[340px] shadow-md ${isCurrent ? 'ring-2 ring-primary' : ''}`}
-                    >
-                      <div className="mb-4">
-                        <div className="text-lg font-semibold text-gray-900 mb-2">{plan.name}</div>
-                        <div className="flex items-end gap-1">
-                          <span className="text-4xl font-bold text-gray-900">${plan.price}</span>
-                          <span className="text-base text-gray-500">/ month</span>
-                        </div>
-                        <div className="text-xs text-gray-400 mt-1 border-b border-gray-200 pb-2">
-                          Totalling to ${plan.price * 12} yearly
-                        </div>
-                      </div>
-                      <Button
-                        className={`w-full mt-2 mb-4 ${isCurrent ? 'bg-primary text-white cursor-default' : 'bg-gray-100 text-gray-700 hover:bg-primary hover:text-white'}`}
-                        variant={isCurrent ? 'default' : 'outline'}
-                        disabled={isCurrent || isUpdatingSubscription || isRequest}
-                        onClick={() => {
-                          if (!isCurrent && !isRequest) handleSubscriptionChange(plan.id);
-                        }}
-                      >
-                        {isCurrent ? 'Current Plan' : isRequest ? 'Request Sent' : 'Switch to this Plan'}
-                      </Button>
-                      <div className="mt-auto">
-                        <div className="text-sm text-gray-700 mb-2">Plan includes:</div>
-                        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                          {plan.features.map((feature, idx) => (
-                            <div key={idx} className="flex items-center gap-2 text-gray-800 text-sm mb-1">
-                              <Check className="h-4 w-4 text-primary" />
-                              <span>{feature}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
             </CardContent>
           </Card>

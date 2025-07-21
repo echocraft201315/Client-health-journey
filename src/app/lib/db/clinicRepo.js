@@ -270,6 +270,16 @@ async function fetchAllsubscriptionData() {
   }
 }
 
+async function getAllClinics() {
+  try {
+    const clinics = await sql`SELECT * FROM "Clinic" ORDER BY "createdAt" DESC`;
+    return clinics;
+  } catch (error) {
+    console.error('Error fetching all clinics:', error);
+    throw error;
+  }
+}
+
 async function fetchTotalRevenue(clinicId) {
   try {
     let result;
@@ -371,6 +381,7 @@ export const clinicRepo = {
   getAllRecentactivity,
   fetchAllRevenueData,
   fetchAllsubscriptionData,
+  getAllClinics,
   fetchAllTotalRevenue,
   getNumWeeklyActivities,
   updateClinic,

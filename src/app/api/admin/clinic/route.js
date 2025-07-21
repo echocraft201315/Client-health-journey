@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { userRepo } from "@/app/lib/db/userRepo";
 import { clinicRepo } from "@/app/lib/db/clinicRepo";
 import { sendClinicRegistrationEmail } from "@/app/lib/api/email";
-import { createCustomer } from "@/app/lib/api/stripe";
+import { ghlApi } from "@/app/lib/api/ghl";
 
 export async function GET() {
     const session = await getServerSession(authOptions);
@@ -56,8 +56,23 @@ export async function POST(request) {
     let clinic = null;
     let adminUser = null;
     const password = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const customer = await createCustomer(clinicEmail, clinicName);
+    
     try {
+        // Create contact in GHL
+        const contactName = primaryContact || clinicName;
+        const [firstName, ...lastNameParts] = contactName.split(' ');
+        const lastName = lastNameParts.join(' ') || '';
+        
+        const ghlContact = await ghlApi.createContact({
+            email: clinicEmail,
+            firstName: firstName,
+            lastName: lastName,
+            phone: clinicPhone,
+            companyName: clinicName,
+            clinicId: null, // Will be updated after clinic creation
+            role: 'clinic_admin',
+        });
+        
         // Create clinic
         clinic = await clinicRepo.createClinic(
             clinicEmail,
@@ -71,8 +86,15 @@ export async function POST(request) {
             addOns,
             hipaaAcknowledgment,
             legalAcknowledgment,
-            customer.id
+            null // No customerId needed for GHL
         );
+        
+        // Update GHL contact with clinic ID
+        await ghlApi.updateContact(ghlContact.id, {
+            customFields: {
+                clinicId: clinic.id,
+            }
+        });
         
 
         // Create admin user

@@ -11,8 +11,9 @@ export const SubscriptionPlan = [
             "Reports and Analytics",
         ],
         clientLimit: 20,
-        priceId: "price_1RMPvoR4fX2MXH35fOl8CbFQ",
-        productId: "prod_SGxrjwoUIIHtGC",
+        // GHL product and price IDs will be configured via environment variables
+        ghlProductId: process.env.GHL_STARTER_PRODUCT_ID,
+        ghlPriceId: process.env.GHL_STARTER_PRICE_ID,
     },
     {
         id: "pro",
@@ -28,7 +29,8 @@ export const SubscriptionPlan = [
             "AI Driven Analytics",
         ],
         clientLimit: false,
-        priceId: "price_1RMPwaR4fX2MXH35ry2i1Dqx",
-        productId: "prod_SGxsXPiP34ZWZn",
+        // GHL product and price IDs will be configured via environment variables
+        ghlProductId: process.env.GHL_PRO_PRODUCT_ID,
+        ghlPriceId: process.env.GHL_PRO_PRICE_ID,
     }
 ]

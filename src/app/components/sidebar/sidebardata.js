@@ -19,6 +19,7 @@ import {
   UserCircle,
   Utensils,
   MessageCircle,
+  Database,
 } from "lucide-react";
 
 // Navigation items for system administrators (admin, super_admin)
@@ -53,6 +54,11 @@ export const adminNavItems = [
     title: "Reports",
     href: "/admin/reports",
     icon: FileText,
+  },
+  {
+    title: "GHL Migration",
+    href: "/admin/ghl-migration",
+    icon: Database,
   },
   {
     title: "Activities",

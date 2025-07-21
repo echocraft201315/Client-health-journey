@@ -9,11 +9,73 @@ async function createSubscriptionTier(clinicId, planId, customerId) {
   }
 
   const [subscriptionTier] = await sql`
-    INSERT INTO "SubscriptionTier" ("clinicId", "planId", "customerId", "isActive")
-    VALUES (${clinicId}, ${planId}, ${customerId}, false)
+    INSERT INTO "SubscriptionTier" ("clinicId", "planId", "customerId", "isActive", "subscriptionProvider")
+    VALUES (${clinicId}, ${planId}, ${customerId}, false, 'ghl')
     RETURNING *
   `;
   return subscriptionTier;
+}
+
+// GHL-specific subscription functions
+async function createGHLSubscriptionTier(clinicId, planId, ghlContactId) {
+  const existing = await sql`
+    SELECT * FROM "SubscriptionTier" WHERE "clinicId" = ${clinicId} LIMIT 1
+  `;
+  if (existing.length > 0) {
+    return existing[0];
+  }
+
+  const [subscriptionTier] = await sql`
+    INSERT INTO "SubscriptionTier" ("clinicId", "planId", "ghlContactId", "isActive", "subscriptionProvider")
+    VALUES (${clinicId}, ${planId}, ${ghlContactId}, false, 'ghl')
+    RETURNING *
+  `;
+  return subscriptionTier;
+}
+
+async function updateSubscriptionTierWithGHL(clinicId, planId, ghlSubscriptionId, ghlContactId, isActive) {
+  const startDate = new Date();
+  const endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days later
+
+  const [updated] = await sql`
+    UPDATE "SubscriptionTier"
+    SET "planId" = ${planId},
+        "ghlSubscriptionId" = ${ghlSubscriptionId},
+        "ghlContactId" = ${ghlContactId},
+        "isActive" = ${isActive},
+        "startDate" = ${startDate},
+        "endDate" = ${endDate},
+        "subscriptionProvider" = 'ghl',
+        "updatedAt" = NOW()
+    WHERE "clinicId" = ${clinicId}
+    RETURNING *
+  `;
+  return updated || null;
+}
+
+async function updateGHLSubscriptionStatus(clinicId, ghlSubscriptionId, isActive) {
+  const [updated] = await sql`
+    UPDATE "SubscriptionTier"
+    SET "isActive" = ${isActive},
+        "updatedAt" = NOW()
+    WHERE "clinicId" = ${clinicId} AND "ghlSubscriptionId" = ${ghlSubscriptionId}
+    RETURNING *
+  `;
+  return updated || null;
+}
+
+async function getSubscriptionTierByGHLSubscriptionId(ghlSubscriptionId) {
+  const result = await sql`
+    SELECT * FROM "SubscriptionTier" WHERE "ghlSubscriptionId" = ${ghlSubscriptionId} LIMIT 1
+  `;
+  return result[0] || null;
+}
+
+async function getSubscriptionTierByGHLContactId(ghlContactId) {
+  const result = await sql`
+    SELECT * FROM "SubscriptionTier" WHERE "ghlContactId" = ${ghlContactId} LIMIT 1
+  `;
+  return result[0] || null;
 }
 
 async function createSubscriptionHistory(clinicId, subscriptionId, paymentAmount) {
@@ -110,4 +172,10 @@ export const subscriptionRepo = {
   getSubscriptionTierByCustomerId,
   getSubscriptionHistory,
   activeSubscriptionTier,
+  // GHL-specific functions
+  createGHLSubscriptionTier,
+  updateSubscriptionTierWithGHL,
+  updateGHLSubscriptionStatus,
+  getSubscriptionTierByGHLSubscriptionId,
+  getSubscriptionTierByGHLContactId,
 };

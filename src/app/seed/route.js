@@ -256,11 +256,14 @@ async function seedSubscriptionTier() {
         "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         "clinicId" UUID NOT NULL UNIQUE REFERENCES "Clinic"("id"),
         "planId" VARCHAR(255) NOT NULL,
-        "customerId" VARCHAR(255) NOT NULL UNIQUE,
+        "customerId" VARCHAR(255),
         "subscriptionId" VARCHAR(255),
         "startDate" DATE,
         "endDate" DATE,
         "isActive" BOOLEAN DEFAULT FALSE,
+        "subscriptionProvider" VARCHAR(50) DEFAULT 'ghl',
+        "ghlSubscriptionId" VARCHAR(255),
+        "ghlContactId" VARCHAR(255),
         "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
