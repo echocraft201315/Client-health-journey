@@ -29,19 +29,19 @@ const ClinicSignUpPage = () => {
         router.push(result.url || "/login");
       }
 
-      const resActivity = await fetch("/api/activity/addMembers", {
-        method: "POST",
-        body: JSON.stringify({
-          type: "clinic_signup",
-          description: "New clinic added",
-        }),
-      });
-      const respond = await resActivity.json();
-      if (respond.status) {
-        toast.success("Activity added successfully");
-      } else {
-        toast.error("Activity not added"); 
-      }
+      // const resActivity = await fetch("/api/activity/addMembers", {
+      //   method: "POST",
+      //   body: JSON.stringify({
+      //     type: "clinic_signup",
+      //     description: "New clinic added",
+      //   }),
+      // });
+      // const respond = await resActivity.json();
+      // if (respond.status) {
+      //   toast.success("Activity added successfully");
+      // } else {
+      //   toast.error("Activity not added"); 
+      // }
     } catch (error) {
       console.log(error.message);
       toast.error("Error in clinic registration");

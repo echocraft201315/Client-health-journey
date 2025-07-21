@@ -15,6 +15,7 @@ export async function POST(request) {
     const activity = await activityRepo.createActivity(type, description, clinicId);
     return NextResponse.json({ status: true, activity });
   } catch (error) {
+    console.log("Error in addMembers", error.message);
     return NextResponse.json({ status: false, message: error.message });
   }
 }
