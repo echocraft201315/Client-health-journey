@@ -50,7 +50,6 @@ async function seedClinic() {
         "addOns" TEXT[],
         "hipaaAcknowledgment" BOOLEAN,
         "legalAcknowledgment" BOOLEAN,
-        "customerId" VARCHAR(255),
         "isActive" BOOLEAN DEFAULT TRUE,
         "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -256,7 +255,6 @@ async function seedSubscriptionTier() {
         "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         "clinicId" UUID NOT NULL UNIQUE REFERENCES "Clinic"("id"),
         "planId" VARCHAR(255) NOT NULL,
-        "customerId" VARCHAR(255),
         "subscriptionId" VARCHAR(255),
         "startDate" DATE,
         "endDate" DATE,

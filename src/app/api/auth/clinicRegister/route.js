@@ -148,21 +148,10 @@ export async function POST(request) {
             ]
         };
 
-        return NextResponse.json({
-            success: true,
-            message: "Clinic created successfully and added to GHL",
-            clinic: {
-                id: clinic.id,
-                name: clinic.name,
-                email: clinic.email,
-                ghlContactId: ghlContact.id
-            },
-            subscriptionSetup: subscriptionSetupInfo,
-            nextSteps: "Complete subscription setup in GHL dashboard"
-        }, { status: 200 });
+        return NextResponse.json({ success: true, url: "/login" });
 
     } catch (error) {
-        console.error("Error in clinic registration:", error);
+        console.log("Error in clinic registration:", error);
 
         // Rollback in reverse order
         try {
@@ -186,13 +175,9 @@ export async function POST(request) {
                 console.log("GHL contact created but clinic failed. Manual cleanup may be needed for contact ID:", ghlContact.id);
             }
         } catch (rollbackError) {
-            console.error("Error during rollback:", rollbackError);
+            console.log("Error during rollback:", rollbackError);
         }
 
-        return NextResponse.json({
-            success: false,
-            message: "Error creating clinic. Please try again or contact support.",
-            error: error.message
-        }, { status: 500 });
+        return NextResponse.json({ success: false, url: "/login", message: error.message }, { status: 400 });
     }
 }

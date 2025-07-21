@@ -20,15 +20,13 @@ const ClinicSignUpPage = () => {
         method: "POST",
         body: JSON.stringify({ ...data, additionalCoaches }),
       });
-      if (!response.ok) {
-        throw new Error("Failed to create clinic");
-      }
       const result = await response.json();
       if (result.success) {
         toast.success("Clinic created successfully");
-        router.push(result.url);
+        router.push(result.url || "/login");
       } else {
-        throw new Error(result.message);
+        toast.error(result.message || "Failed to create clinic");
+        router.push(result.url || "/login");
       }
 
       const resActivity = await fetch("/api/activity/addMembers", {
@@ -39,14 +37,14 @@ const ClinicSignUpPage = () => {
         }),
       });
       const respond = await resActivity.json();
-      if (respond.success) {
+      if (respond.status) {
         toast.success("Activity added successfully");
       } else {
-        throw new Error(respond.message);
+        toast.error("Activity not added"); 
       }
     } catch (error) {
       console.log(error.message);
-      toast.error("Failed to Create Clinic");
+      toast.error("Error in clinic registration");
     } finally {
       setIsSubmitting(false);
     }

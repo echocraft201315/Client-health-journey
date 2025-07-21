@@ -1,6 +1,6 @@
 import { sql } from './postgresql';
 
-async function createSubscriptionTier(clinicId, planId, customerId) {
+async function createSubscriptionTier(clinicId, planId) {
   const existing = await sql`
     SELECT * FROM "SubscriptionTier" WHERE "clinicId" = ${clinicId} LIMIT 1
   `;
@@ -9,8 +9,8 @@ async function createSubscriptionTier(clinicId, planId, customerId) {
   }
 
   const [subscriptionTier] = await sql`
-    INSERT INTO "SubscriptionTier" ("clinicId", "planId", "customerId", "isActive", "subscriptionProvider")
-    VALUES (${clinicId}, ${planId}, ${customerId}, false, 'ghl')
+    INSERT INTO "SubscriptionTier" ("clinicId", "planId", "isActive", "subscriptionProvider")
+    VALUES (${clinicId}, ${planId}, false, 'ghl')
     RETURNING *
   `;
   return subscriptionTier;
@@ -133,13 +133,6 @@ async function updateSubscriptionTier(clinicId, planId) {
   return updated || null;
 }
 
-async function getSubscriptionTierByCustomerId(customerId) {
-  const result = await sql`
-    SELECT * FROM "SubscriptionTier" WHERE "customerId" = ${customerId} LIMIT 1
-  `;
-  return result[0] || null;
-}
-
 async function deleteSessionByClinicId(clinicId) {
   await sql`
     DELETE FROM "SubscriptionTier" WHERE "clinicId" = ${clinicId}
@@ -169,7 +162,6 @@ export const subscriptionRepo = {
   deleteSubscriptionTier,
   updateSubscriptionTier,
   deleteSessionByClinicId,
-  getSubscriptionTierByCustomerId,
   getSubscriptionHistory,
   activeSubscriptionTier,
   // GHL-specific functions

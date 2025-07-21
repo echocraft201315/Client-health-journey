@@ -98,7 +98,19 @@ export const ghlApi = {
           role: contactData.role || 'clinic_admin',
         },
       });
-      return response.data;
+      console.log('GHL Create Contact FULL Response:', response.data);
+      // Try to extract the contact ID from different possible response structures
+      let contactId = response.data.id;
+      if (!contactId && response.data.contact && response.data.contact.id) {
+        contactId = response.data.contact.id;
+      }
+      if (!contactId && response.data.data && response.data.data.id) {
+        contactId = response.data.data.id;
+      }
+      if (!contactId) {
+        throw new Error('Could not extract contact ID from GHL response');
+      }
+      return { id: contactId, raw: response.data };
     } catch (error) {
       console.error('GHL Create Contact Error:', error.response?.data || error.message);
       throw new Error(`Failed to create GHL contact: ${error.message}`);

@@ -173,9 +173,6 @@ function clinicModel() {
         legalAcknowledgment: {
             type: Boolean,
         },
-        customerId: {
-            type: String,
-        },
         coaches: {
             type: [Schema.Types.ObjectId],
             ref: "User",
@@ -387,7 +384,6 @@ function SubscriptionTierModel() {
     const SubscriptionTierSchema = new Schema({
         clinicId: {type: Schema.Types.ObjectId, ref: "Clinic", required: true, unique: true},
         planId: {type: String, required: true},
-        customerId: {type: String, required: true, unique: true},
         subscriptionId: {type: String},
         startDate: {type: Date},
         endDate: {type: Date},

@@ -13,7 +13,6 @@ async function createClinic(
   addOns,
   hipaaAcknowledgment,
   legalAcknowledgment,
-  customerId,
   options = {}
 ) {
   const existingClinic = await sql`
@@ -27,11 +26,11 @@ async function createClinic(
     INSERT INTO "Clinic" (
       "email", "name", "phoneNumber", "primaryContact", "streetAddress",
       "city", "state", "zipCode", "addOns", "hipaaAcknowledgment",
-      "legalAcknowledgment", "customerId"
+      "legalAcknowledgment"
     ) VALUES (
       ${email}, ${name}, ${phoneNumber}, ${primaryContact}, ${streetAddress},
       ${city}, ${state}, ${zipCode}, ${addOns}, ${hipaaAcknowledgment},
-      ${legalAcknowledgment}, ${customerId}
+      ${legalAcknowledgment}
     )
     RETURNING *
   `;
