@@ -39,6 +39,13 @@ export async function POST(request) {
         // Extract event type and normalize data structure
         // GHL sends subscription.status, we need to map it to our event types
         const ghlStatus = payload.event;
+        let planId = payload.plan_id;
+        if (planId === "Client Health Tracker - Starter") {
+            planId = "starter";
+        }
+        else if (planId === "Client Health Tracker - Pro") {
+            planId = "pro";
+        }
         const automationTrigger = mapGHLStatusToTrigger(ghlStatus);
 
         // Normalize the flat payload into the expected structure
@@ -46,7 +53,7 @@ export async function POST(request) {
             subscription_id: payload.subscriptionId,
             customer_id: payload.customer_id,
             customer_email: payload.customer_email,
-            plan_id: payload.plan_id,
+            plan_id: planId,
             ghl_status: ghlStatus,
             started_date: payload.start_date,
             name: payload.name,
