@@ -5,14 +5,6 @@ async function createClinic(
   email,
   name,
   phoneNumber,
-  primaryContact,
-  streetAddress,
-  city,
-  state,
-  zipCode,
-  addOns,
-  hipaaAcknowledgment,
-  legalAcknowledgment,
   options = {}
 ) {
   const existingClinic = await sql`
