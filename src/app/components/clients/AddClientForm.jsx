@@ -100,6 +100,7 @@ const AddClientForm = ({
     if (isPending) {
       return;
     }
+    console.log(clientLimit, clientCount);
     if (
       clientLimit !== false &&
       (clientLimit === 0 || clientLimit <= clientCount)
