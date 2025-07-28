@@ -50,6 +50,7 @@ async function seedClinic() {
         "addOns" TEXT[],
         "hipaaAcknowledgment" BOOLEAN,
         "legalAcknowledgment" BOOLEAN,
+        "ghlContactId" VARCHAR(255),
         "isActive" BOOLEAN DEFAULT TRUE,
         "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -260,8 +261,6 @@ async function seedSubscriptionTier() {
         "endDate" DATE,
         "isActive" BOOLEAN DEFAULT FALSE,
         "subscriptionProvider" VARCHAR(50) DEFAULT 'ghl',
-        "ghlSubscriptionId" VARCHAR(255),
-        "ghlContactId" VARCHAR(255),
         "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
@@ -326,7 +325,7 @@ async function seedSelfieImage() {
       "description" TEXT,
       "date" DATE
     );
-  `;  
+  `;
 }
 
 export async function GET() {

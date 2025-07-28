@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import SignupDemoNotice from "../auth/signup/SignupDemoNotice";
 import { Card } from "../components/ui/card";
 import ClinicSignupForm from "../auth/signup/ClinicSignupForm";
+import RegistrationSuccess from "../components/auth/RegistrationSuccess";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 const ClinicSignUpPage = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(null);
 
   const handleSubmit = async (data, additionalCoaches) => {
     setIsSubmitting(true);
@@ -22,8 +24,14 @@ const ClinicSignUpPage = () => {
       });
       const result = await response.json();
       if (result.success) {
-        toast.success("Clinic created successfully");
-        router.push(result.url || "/login");
+        // Show success state with payment link
+        setRegistrationSuccess({
+          clinicName: data.clinicName,
+          planName: data.selectedPlan === 'starter' ? 'Starter' : 'Pro',
+          ghlPaymentLink: result.ghlPaymentLink
+        });
+        
+        toast.success(result.message || "Clinic created successfully");
       } else {
         toast.error(result.message || "Failed to create clinic");
         router.push(result.url || "/login");
@@ -50,6 +58,21 @@ const ClinicSignUpPage = () => {
     }
   };
 
+  const handleContinueToLogin = () => {
+    router.push("/login");
+  };
+
+  // Show success page if registration was successful
+  if (registrationSuccess) {
+    return (
+      <RegistrationSuccess
+        clinicName={registrationSuccess.clinicName}
+        planName={registrationSuccess.planName}
+        ghlPaymentLink={registrationSuccess.ghlPaymentLink}
+        onContinue={handleContinueToLogin}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-2 sm:p-4">

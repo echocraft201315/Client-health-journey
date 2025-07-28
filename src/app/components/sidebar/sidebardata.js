@@ -55,11 +55,7 @@ export const adminNavItems = [
     href: "/admin/reports",
     icon: FileText,
   },
-  {
-    title: "GHL Migration",
-    href: "/admin/ghl-migration",
-    icon: Database,
-  },
+
   {
     title: "Activities",
     href: "/admin/activities",

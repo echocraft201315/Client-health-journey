@@ -3,7 +3,6 @@ import { clinicRepo } from "@/app/lib/db/clinicRepo";
 import { userRepo } from "@/app/lib/db/userRepo";
 import { subscriptionRepo } from "@/app/lib/db/subscriptionRepo";
 import { sendCoachRegistrationEmail } from "@/app/lib/api/email";
-import { ghlApi, getGHLProductByPlanId, createGHLSubscriptionUrl } from "@/app/lib/api/ghl";
 import { SubscriptionPlan } from "@/app/lib/stack";
 
 export async function POST(request) {
@@ -36,32 +35,10 @@ export async function POST(request) {
 
     let clinic = null;
     let adminUser = null;
-    let ghlContact = null;
     const createdCoachUsers = [];
 
     try {
-        // Step 1: Create contact in GHL automatically
-        console.log("Creating GHL contact for clinic:", clinicName);
-        const contactName = primaryContact || clinicName;
-        const [firstName, ...lastNameParts] = contactName.split(' ');
-        const lastName = lastNameParts.join(' ') || '';
-
-        ghlContact = await ghlApi.createContact({
-            email: clinicEmail,
-            firstName: firstName,
-            lastName: lastName,
-            phone: clinicPhone,
-            companyName: clinicName,
-            customFields: {
-                role: 'clinic_admin',
-                planSelected: selectedPlan,
-                registrationDate: new Date().toISOString(),
-            }
-        });
-
-        console.log("GHL contact created:", ghlContact.id);
-
-        // Step 2: Create clinic in local database
+        // Step 1: Create clinic in local database
         clinic = await clinicRepo.createClinic(
             clinicEmail,
             clinicName,
@@ -73,30 +50,18 @@ export async function POST(request) {
             zipCode,
             addOns,
             hipaaAcknowledgment,
-            legalAcknowledgment,
-            null // No customerId needed for GHL
+            legalAcknowledgment
         );
 
-        // Step 3: Update GHL contact with clinic ID
-        await ghlApi.updateContact(ghlContact.id, {
-            customFields: {
-                clinicId: clinic.id,
-                role: 'clinic_admin',
-                planSelected: selectedPlan,
-                registrationDate: new Date().toISOString(),
-            }
-        });
-
-        // Step 4: Create GHL subscription tier (inactive until subscription is set up in GHL)
-        const subscriptionTier = await subscriptionRepo.createGHLSubscriptionTier(
+        // Step 2: Create subscription tier
+        const subscriptionTier = await subscriptionRepo.createSubscriptionTier(
             clinic.id,
-            selectedPlan,
-            ghlContact.id
+            selectedPlan
         );
 
         console.log("Subscription tier created:", subscriptionTier.id);
 
-        // Step 5: Create admin user
+        // Step 3: Create admin user
         adminUser = await userRepo.createAdminUser(
             primaryContact,
             email,
@@ -106,7 +71,7 @@ export async function POST(request) {
             clinic.id
         );
 
-        // Step 6: Create coach users if any
+        // Step 4: Create coach users if any
         if (additionalCoaches && additionalCoaches.length > 0) {
             for (const coach of additionalCoaches) {
                 if (!coach.name || !coach.email || !coach.phone) {
@@ -130,25 +95,20 @@ export async function POST(request) {
             }
         }
 
-        // Step 7: Prepare subscription setup information
+        // Step 5: Get the GHL payment link for the selected plan
         const plan = SubscriptionPlan.find(p => p.id === selectedPlan);
-        const subscriptionSetupInfo = {
-            ghlContactId: ghlContact.id,
-            clinicId: clinic.id,
-            selectedPlan: selectedPlan,
-            planName: plan?.name || selectedPlan,
-            planPrice: plan?.price || 0,
-            ghlDashboardUrl: process.env.GHL_DASHBOARD_URL || 'https://app.gohighlevel.com',
-            instructions: [
-                "1. Log into your GHL dashboard",
-                "2. Go to Contacts and find your clinic contact",
-                "3. Create a subscription for the selected plan",
-                "4. Set up payment processing",
-                "5. Your app will automatically sync subscription status"
-            ]
-        };
+        const ghlPaymentLink = plan?.ghlPaymentLink;
 
-        return NextResponse.json({ success: true, url: "/login" });
+        if (!ghlPaymentLink) {
+            throw new Error(`No payment link found for plan: ${selectedPlan}`);
+        }
+
+        return NextResponse.json({
+            success: true,
+            url: "/login",
+            ghlPaymentLink: ghlPaymentLink,
+            message: "Registration successful! Please complete your payment to activate your subscription."
+        });
 
     } catch (error) {
         console.log("Error in clinic registration:", error);
@@ -168,11 +128,6 @@ export async function POST(request) {
             // Delete clinic if created
             if (clinic) {
                 await clinicRepo.deleteClinic(clinic.id);
-            }
-
-            // Note: GHL contact deletion might require manual cleanup
-            if (ghlContact) {
-                console.log("GHL contact created but clinic failed. Manual cleanup may be needed for contact ID:", ghlContact.id);
             }
         } catch (rollbackError) {
             console.log("Error during rollback:", rollbackError);

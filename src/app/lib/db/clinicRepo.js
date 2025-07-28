@@ -364,6 +364,33 @@ async function getClinicByEmail(email) {
   return clinic[0] || null;
 }
 
+async function getClinicByGHLContactId(ghlContactId) {
+  const clinic = await sql`
+    SELECT * FROM "Clinic" WHERE "ghlContactId" = ${ghlContactId} LIMIT 1
+  `;
+  return clinic[0] || null;
+}
+
+async function updateClinicGHLContactId(clinicId, ghlContactId) {
+  const updated = await sql`
+    UPDATE "Clinic"
+    SET "ghlContactId" = ${ghlContactId}
+    WHERE "id" = ${clinicId}
+    RETURNING *
+  `;
+  return updated[0] || null;
+}
+
+async function getClinicByGHLSubscriptionId(ghlSubscriptionId) {
+  const result = await sql`
+    SELECT c.* FROM "Clinic" c
+    JOIN "SubscriptionTier" st ON c."id" = st."clinicId"
+    WHERE st."subscriptionId" = ${ghlSubscriptionId}
+    LIMIT 1
+  `;
+  return result[0] || null;
+}
+
 
 export const clinicRepo = {
   createClinic,
@@ -385,5 +412,8 @@ export const clinicRepo = {
   getNumWeeklyActivities,
   updateClinic,
   getClinicByEmail,
-  updateClinicSubscription
+  updateClinicSubscription,
+  getClinicByGHLContactId,
+  updateClinicGHLContactId,
+  getClinicByGHLSubscriptionId
 };

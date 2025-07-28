@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { userRepo } from "@/app/lib/db/userRepo";
 import { clinicRepo } from "@/app/lib/db/clinicRepo";
 import { sendClinicRegistrationEmail } from "@/app/lib/api/email";
-import { ghlApi } from "@/app/lib/api/ghl";
+import { SubscriptionPlan } from "@/app/lib/stack";
 
 export async function GET() {
     const session = await getServerSession(authOptions);
@@ -30,8 +30,6 @@ export async function GET() {
     }
 }
 
-
-
 export async function POST(request) {
     const {
         clinicName,
@@ -49,30 +47,15 @@ export async function POST(request) {
         addOns,
     } = await request.json();
 
-    if (!clinicName || !clinicEmail || !clinicPhone || !streetAddress || !city || !state || !zipCode || !primaryContact || !email || !hipaaAcknowledgment || !legalAcknowledgment ) {
+    if (!clinicName || !clinicEmail || !clinicPhone || !streetAddress || !city || !state || !zipCode || !primaryContact || !email || !hipaaAcknowledgment || !legalAcknowledgment) {
         return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 });
     }
 
     let clinic = null;
     let adminUser = null;
     const password = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    
+
     try {
-        // Create contact in GHL
-        const contactName = primaryContact || clinicName;
-        const [firstName, ...lastNameParts] = contactName.split(' ');
-        const lastName = lastNameParts.join(' ') || '';
-        
-        const ghlContact = await ghlApi.createContact({
-            email: clinicEmail,
-            firstName: firstName,
-            lastName: lastName,
-            phone: clinicPhone,
-            companyName: clinicName,
-            clinicId: null, // Will be updated after clinic creation
-            role: 'clinic_admin',
-        });
-        
         // Create clinic
         clinic = await clinicRepo.createClinic(
             clinicEmail,
@@ -85,17 +68,8 @@ export async function POST(request) {
             zipCode,
             addOns,
             hipaaAcknowledgment,
-            legalAcknowledgment,
-            null // No customerId needed for GHL
+            legalAcknowledgment
         );
-        
-        // Update GHL contact with clinic ID
-        await ghlApi.updateContact(ghlContact.id, {
-            customFields: {
-                clinicId: clinic.id,
-            }
-        });
-        
 
         // Create admin user
         adminUser = await userRepo.createAdminUser(
@@ -107,12 +81,21 @@ export async function POST(request) {
             clinic.id
         );
         await sendClinicRegistrationEmail(clinicEmail, clinicName, clinicPhone, email, password);
-        return NextResponse.json({ success: true, message: "Clinic created successfully" }, { status: 200 });
+
+        // Get the GHL payment link for the selected plan
+        const plan = SubscriptionPlan.find(p => p.id === selectedPlan);
+        const ghlPaymentLink = plan?.ghlPaymentLink;
+
+        return NextResponse.json({
+            success: true,
+            message: "Clinic created successfully",
+            ghlPaymentLink: ghlPaymentLink,
+            note: ghlPaymentLink ? "Please provide the GHL payment link to the clinic to complete their subscription." : "No payment link available for the selected plan."
+        }, { status: 200 });
     } catch (error) {
         console.error(error);
         // Rollback in reverse order
         try {
-
             // Delete admin user if created
             if (adminUser) {
                 await userRepo.deleteAdminUser(adminUser.id);
