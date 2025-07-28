@@ -3,29 +3,33 @@ import { subscriptionRepo } from "@/app/lib/db/subscriptionRepo";
 import { clinicRepo } from "@/app/lib/db/clinicRepo";
 import {
     executeAutomationWorkflow,
-    verifyGHLWebhookSignature,
     extractClinicIdentifier,
     parseAutomationEvent,
     mapGHLToAutomationTrigger,
     logAutomationExecution
 } from "@/app/lib/ghl-automation-utils.js";
 
-// Webhook secret for verification (should be stored in environment variables)
-const WEBHOOK_SECRET = process.env.GHL_WEBHOOK_SECRET;
+// Bearer token for authorization (should be stored in environment variables)
+const BEARER_TOKEN = process.env.GHL_BEARER_TOKEN || 'ClinicApp_GHL_WebhookSecret_2024';
 
 export async function POST(request) {
     try {
         const body = await request.text();
-        const signature = request.headers.get('x-ghl-signature') ||
-            request.headers.get('x-webhook-signature') ||
-            request.headers.get('authorization');
-        console.log("webhook secret", WEBHOOK_SECRET);
-        console.log("signature", signature);
+
+        // Get Bearer token from Authorization header
+        const authHeader = request.headers.get('authorization');
+        const bearerToken = authHeader?.replace('Bearer ', '');
+
+        console.log('Expected Bearer token:', BEARER_TOKEN);
+        console.log('Received Bearer token:', bearerToken);
         console.log('GHL Automation Webhook received:', body);
-        // Verify webhook signature
-        if (!verifyGHLWebhookSignature(body, signature, WEBHOOK_SECRET)) {
-            console.error('Invalid webhook signature');
-            return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+
+        // Verify Bearer token
+        if (!bearerToken || bearerToken !== BEARER_TOKEN) {
+            console.error('Invalid Bearer token');
+            console.error('Expected:', BEARER_TOKEN);
+            console.error('Received:', bearerToken);
+            return NextResponse.json({ error: 'Invalid authorization' }, { status: 401 });
         }
 
         // Parse the body - GHL sends flat key-value pairs
