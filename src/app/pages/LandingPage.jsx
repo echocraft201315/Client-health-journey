@@ -99,7 +99,7 @@ const LandingPage = () => {
                 >
                   <a href="#features">Learn More</a>
                 </Button>
-                <Button
+                {/* <Button
                   asChild
                   variant="outline"
                   className="w-full sm:w-auto px-8 py-3 text-base font-medium text-primary-600 bg-transparent hover:bg-primary-50 border border-primary-200 hover:border-primary-300 transform hover:scale-105 transition-all duration-200"
@@ -108,7 +108,7 @@ const LandingPage = () => {
                     <Building size={16} className="mr-2" />
                     Register your clinic
                   </Link>
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>
