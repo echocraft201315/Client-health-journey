@@ -77,7 +77,18 @@ export async function POST(request) {
         if (clinicIdentifier.email) {
             clinic = await clinicRepo.getClinicByEmail(clinicIdentifier.email);
         } else if (clinicIdentifier.customer_id) {
-            clinic = await clinicRepo.getClinicById(clinicIdentifier.customer_id);
+            // Try to find clinic by GHL contact ID first (since GHL sends non-UUID customer_id)
+            clinic = await clinicRepo.getClinicByGHLContactId(clinicIdentifier.customer_id);
+
+            // If not found by GHL contact ID, try by subscription ID
+            if (!clinic && parsedEventData.subscription_id) {
+                clinic = await clinicRepo.getClinicByGHLSubscriptionId(parsedEventData.subscription_id);
+            }
+
+            // Only try getClinicById if the customer_id looks like a UUID
+            if (!clinic && isValidUUID(clinicIdentifier.customer_id)) {
+                clinic = await clinicRepo.getClinicById(clinicIdentifier.customer_id);
+            }
         }
 
         if (!clinic) {
@@ -143,6 +154,7 @@ function mapGHLStatusToTrigger(ghlStatus) {
         'active': 'subscription.activated',
         'activated': 'subscription.activated',
         'created': 'subscription.activated',
+        'incomplete': 'subscription.activated', // Handle incomplete status
         'cancelled': 'subscription.cancelled',
         'deactivated': 'subscription.cancelled',
         'failed': 'subscription.payment_failed',
@@ -314,4 +326,12 @@ async function handlePaymentFailure(eventData, clinic) {
 
     // You could also update subscription status to indicate payment issues
     // await subscriptionRepo.updateSubscriptionStatus(clinic.id, false, subscription_id);
+}
+
+/**
+ * Check if a string is a valid UUID format
+ */
+function isValidUUID(str) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
 } 
