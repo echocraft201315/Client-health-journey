@@ -61,7 +61,7 @@ const LoginPage = () => {
       <div className="max-w-md w-full">
         <div className="bg-white p-4 sm:p-8 rounded-lg shadow-md">
           <LoginHeader />
-          <Tabs
+          {/* <Tabs
             defaultValue="login"
             className="mt-6"
             onValueChange={(value) => {
@@ -69,18 +69,18 @@ const LoginPage = () => {
                 router.push("clinicRegister");
               }
             }}
-          >
-            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2">
+          > */}
+            {/* <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Register Your Clinic</TabsTrigger>
             </TabsList>
-            <TabsContent value="login" className="mt-4">
+            <TabsContent value="login" className="mt-4"> */}
               <LoginFormFields
                 onSubmit={onSubmit}
                 isSubmitting={isSubmitting}
               />
-            </TabsContent>
-          </Tabs>
+            {/* </TabsContent>
+          </Tabs> */}
         </div>
       </div>
     </div>

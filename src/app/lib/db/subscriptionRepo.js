@@ -1,11 +1,11 @@
 import { sql } from './postgresql.js';
 
 export const subscriptionRepo = {
-    async createSubscriptionTier(clinicId, planId, subscriptionId = null) {
+    async createSubscriptionTier(clinicId, planId, subscriptionId = null, startDate, endDate, isActive) {
         try {
             const result = await sql`
-                INSERT INTO "SubscriptionTier" ("clinicId", "planId", "subscriptionId", "startDate", "isActive")
-                VALUES (${clinicId}, ${planId}, ${subscriptionId}, NOW(), true)
+                INSERT INTO "SubscriptionTier" ("clinicId", "planId", "subscriptionId", "startDate", "endDate", "isActive")
+                VALUES (${clinicId}, ${planId}, ${subscriptionId}, ${startDate}, ${endDate}, ${isActive})
                 RETURNING *
             `;
             return result[0];
@@ -30,14 +30,15 @@ export const subscriptionRepo = {
         }
     },
 
-    async updateSubscriptionStatus(clinicId, isActive, subscriptionId = null, endDate = null) {
+    async updateSubscriptionStatus(clinicId, planId, subscriptionId = null, startDate, endDate, isActive) {
         try {
             const result = await sql`
                 UPDATE "SubscriptionTier" 
-                SET "isActive" = ${isActive}, 
+                SET "planId" = ${planId}, 
                     "subscriptionId" = COALESCE(${subscriptionId}, "subscriptionId"),
+                    "startDate" = COALESCE(${startDate}, "startDate"),
                     "endDate" = COALESCE(${endDate}, "endDate"),
-                    "updatedAt" = NOW()
+                    "isActive" = COALESCE(${isActive}, "isActive")  
                 WHERE "clinicId" = ${clinicId}
                 RETURNING *
             `;
@@ -78,34 +79,34 @@ export const subscriptionRepo = {
         }
     },
 
-    async getSubscriptionByGHLId(ghlSubscriptionId) {
-        try {
-            const result = await sql`
-                SELECT * FROM "SubscriptionTier" 
-                WHERE "subscriptionId" = ${ghlSubscriptionId}
-                ORDER BY "createdAt" DESC 
-                LIMIT 1
-            `;
-            return result[0] || null;
-        } catch (error) {
-            console.error('Error getting subscription by GHL ID:', error);
-            throw error;
-        }
-    },
-
-    async updateSubscriptionDates(clinicId, startDate, endDate) {
+    async cancelSubscriptionStatus(clinicId, isActive, subscriptionId, endDate) {
         try {
             const result = await sql`
                 UPDATE "SubscriptionTier" 
-                SET "startDate" = ${startDate}, 
-                    "endDate" = ${endDate},
-                    "updatedAt" = NOW()
-                WHERE "clinicId" = ${clinicId}
+                SET "isActive" = ${isActive}, 
+                    "endDate" = ${endDate}
+                WHERE "clinicId" = ${clinicId} AND "subscriptionId" = ${subscriptionId}
                 RETURNING *
             `;
             return result[0];
         } catch (error) {
-            console.error('Error updating subscription dates:', error);
+            console.error('Error canceling subscription status:', error);
+            throw error;
+        }
+    },
+
+    async renewalSubscriptionStatus(clinicId, isActive, subscriptionId, newEndDate) {
+        try {
+            const result = await sql`
+                UPDATE "SubscriptionTier" 
+                SET "isActive" = ${isActive}, 
+                    "endDate" = ${newEndDate}
+                WHERE "clinicId" = ${clinicId} AND "subscriptionId" = ${subscriptionId}
+                RETURNING *
+            `;
+            return result[0];
+        } catch (error) {
+            console.error('Error renewing subscription status:', error);
             throw error;
         }
     }

@@ -1,15 +1,7 @@
 import { NextResponse } from "next/server";
 import { subscriptionRepo } from "@/app/lib/db/subscriptionRepo";
 import { clinicRepo } from "@/app/lib/db/clinicRepo";
-import {
-    executeAutomationWorkflow,
-    verifyGHLWebhookSignature,
-    extractClinicIdentifier,
-    parseAutomationEvent,
-    mapGHLToAutomationTrigger,
-    logAutomationExecution
-} from "@/app/lib/ghl-automation-utils.js";
-
+import { userRepo } from "@/app/lib/db/userRepo";
 // Webhook secret for verification (should be stored in environment variables)
 const WEBHOOK_SECRET = process.env.GHL_WEBHOOK_SECRET;
 
@@ -46,94 +38,26 @@ export async function POST(request) {
 
         // Extract event type and normalize data structure
         // GHL sends subscription.status, we need to map it to our event types
-        const ghlStatus = payload.event || payload.status;
+        const ghlStatus = payload.event;
         const automationTrigger = mapGHLStatusToTrigger(ghlStatus);
 
         // Normalize the flat payload into the expected structure
-        // Match the exact field names from your GHL configuration
         const normalizedEventData = {
-            subscription_id: payload.subscriptionId || payload.subscription_id,
+            subscription_id: payload.subscriptionId,
             customer_id: payload.customer_id,
             customer_email: payload.customer_email,
             plan_id: payload.plan_id,
-            amount: payload.amount,
-            start_date: payload.start_date || payload.startDate,
-            end_date: payload.end_date || payload.endDate,
-            failure_reason: payload.failure_reason || payload.failureReason,
-            clinic_name: payload.clinic_name || payload.companyName,
-            contact_name: payload.contact_name || payload.contactName,
+            ghl_status: ghlStatus,
+            started_date: payload.start_date,
+            name: payload.name,
             phone: payload.phone,
-            // Store original GHL status for debugging
-            ghl_status: ghlStatus
         };
-
-        // Parse and normalize event data
-        const parsedEventData = parseAutomationEvent(normalizedEventData);
-
-        // Extract clinic identifier and find clinic
-        const clinicIdentifier = extractClinicIdentifier(parsedEventData);
-        let clinic = null;
-
-        if (clinicIdentifier.email) {
-            clinic = await clinicRepo.getClinicByEmail(clinicIdentifier.email);
-        } else if (clinicIdentifier.customer_id) {
-            // Try to find clinic by GHL contact ID first (since GHL sends non-UUID customer_id)
-            clinic = await clinicRepo.getClinicByGHLContactId(clinicIdentifier.customer_id);
-
-            // If not found by GHL contact ID, try by subscription ID
-            if (!clinic && parsedEventData.subscription_id) {
-                clinic = await clinicRepo.getClinicByGHLSubscriptionId(parsedEventData.subscription_id);
-            }
-
-            // Only try getClinicById if the customer_id looks like a UUID
-            if (!clinic && isValidUUID(clinicIdentifier.customer_id)) {
-                clinic = await clinicRepo.getClinicById(clinicIdentifier.customer_id);
-            }
-        }
-
-        if (!clinic) {
-            console.error('Clinic not found for automation trigger:', parsedEventData);
-            return NextResponse.json({
-                error: 'Clinic not found',
-                automationTrigger,
-                eventData: parsedEventData,
-                receivedPayload: payload,
-                ghlStatus: ghlStatus
-            }, { status: 404 });
-        }
-
-        // Prepare context for automation workflow
-        const context = {
-            clinic,
-            subscriptionData: parsedEventData,
-            timestamp: new Date().toISOString(),
-            originalPayload: payload,
-            ghlStatus: ghlStatus
-        };
-
-        // Execute automation workflow based on trigger
-        const workflowResults = await executeAutomationWorkflow(
-            automationTrigger,
-            parsedEventData,
-            context
-        );
-
-        // Log automation execution
-        logAutomationExecution(automationTrigger, parsedEventData, workflowResults);
 
         // Handle specific subscription actions that need database updates
-        await handleSubscriptionDatabaseActions(automationTrigger, parsedEventData, clinic);
+        await handleSubscriptionDatabaseActions(automationTrigger, normalizedEventData);
 
         return NextResponse.json({
             message: 'Automation workflow executed successfully',
-            trigger: automationTrigger,
-            workflow: workflowResults.workflow,
-            actionsExecuted: workflowResults.executedActions.length,
-            success: workflowResults.success,
-            errors: workflowResults.errors,
-            clinicFound: !!clinic,
-            clinicId: clinic?.id,
-            ghlStatus: ghlStatus
         }, { status: 200 });
 
     } catch (error) {
@@ -175,23 +99,23 @@ function mapGHLStatusToTrigger(ghlStatus) {
  * Handle subscription database actions based on automation trigger
  * This separates database operations from automation workflow actions
  */
-async function handleSubscriptionDatabaseActions(trigger, eventData, clinic) {
+async function handleSubscriptionDatabaseActions(trigger, eventData) {
     try {
         switch (trigger) {
             case 'subscription.activated':
-                await handleSubscriptionActivation(eventData, clinic);
+                await handleSubscriptionActivation(eventData);
                 break;
 
             case 'subscription.cancelled':
-                await handleSubscriptionCancellation(eventData, clinic);
+                await handleSubscriptionCancellation(eventData);
                 break;
 
             case 'subscription.renewed':
-                await handleSubscriptionRenewal(eventData, clinic);
+                await handleSubscriptionRenewal(eventData);
                 break;
 
             case 'subscription.payment_failed':
-                await handlePaymentFailure(eventData, clinic);
+                await handlePaymentFailure(eventData);
                 break;
 
             default:
@@ -206,78 +130,124 @@ async function handleSubscriptionDatabaseActions(trigger, eventData, clinic) {
 /**
  * Handle subscription activation database operations
  */
-async function handleSubscriptionActivation(eventData, clinic) {
+async function handleSubscriptionActivation(eventData) {
     const {
         subscription_id,
+        customer_email,
         plan_id,
-        amount,
         start_date,
-        end_date
+        name,
+        phone
     } = eventData;
 
-    // Create or update subscription tier
-    let subscriptionTier = await subscriptionRepo.getSubscriptionTier(clinic.id);
+    try {
+        // Calculate end_date for monthly subscription (30 days from start_date)
+        const startDate = start_date ? new Date(start_date) : new Date();
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 30); // Add 30 days for monthly subscription
 
-    if (subscriptionTier) {
-        // Update existing subscription
-        await subscriptionRepo.updateSubscriptionStatus(
-            clinic.id,
-            true,
-            subscription_id,
-            end_date ? new Date(end_date) : null
-        );
+        const clinic = await clinicRepo.getClinicByEmail(customer_email);
 
-        if (start_date) {
-            await subscriptionRepo.updateSubscriptionDates(
-                clinic.id,
-                new Date(start_date),
-                end_date ? new Date(end_date) : null
-            );
+        if (clinic) {
+            let subscriptionTier = await subscriptionRepo.getSubscriptionTier(clinic.id);
+            if (subscriptionTier) {
+                // Update existing subscription
+                await subscriptionRepo.updateSubscriptionStatus(
+                    clinic.id,
+                    plan_id,
+                    subscription_id,
+                    startDate,
+                    endDate,
+                    new Date(),
+                    true
+                );
+            }
+            else {
+                // Create new subscription tier
+                await subscriptionRepo.createSubscriptionTier(
+                    clinic.id,
+                    plan_id,
+                    subscription_id,
+                    startDate,
+                    endDate,
+                    new Date(),
+                    new Date(),
+                    true
+                );
+            }
         }
-    } else {
-        // Create new subscription tier
-        subscriptionTier = await subscriptionRepo.createSubscriptionTier(
-            clinic.id,
-            plan_id,
-            subscription_id
-        );
-
-        if (start_date) {
-            await subscriptionRepo.updateSubscriptionDates(
-                clinic.id,
-                new Date(start_date),
-                end_date ? new Date(end_date) : null
-            );
+        else {
+            // Create new clinic
+            try {
+                const newClinic = await clinicRepo.createClinic(
+                    customer_email,
+                    name,
+                    phone
+                );
+                // Create new subscription tier
+                await subscriptionRepo.createSubscriptionTier(
+                    newClinic.id,
+                    plan_id,
+                    subscription_id,
+                    startDate,
+                    endDate,
+                    new Date(),
+                    new Date(),
+                    true
+                );
+                const adminUser = await userRepo.createAdminUser(
+                    name,
+                    customer_email,
+                    phone,
+                    "clinic_admin",
+                    "password123",
+                    newClinic.id
+                );
+            } catch (error) {
+                console.error('Error creating new clinic:', error);
+            }
         }
-    }
 
-    // Create subscription history record
-    if (amount) {
-        await subscriptionRepo.createSubscriptionHistory(
-            clinic.id,
-            subscriptionTier.id,
-            parseFloat(amount)
-        );
-    }
+        console.log(`✅ Subscription activated - Start: ${startDate.toISOString()}, End: ${endDate.toISOString()}`);
 
-    console.log(`Subscription activated for clinic: ${clinic.id}`);
+        return NextResponse.json({
+            success: true,
+            url: "/login",
+            message: 'Subscription activated successfully',
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString()
+        });
+    } catch (error) {
+        console.log('Error in handleSubscriptionActivation:', error);
+        return NextResponse.json({
+            success: false,
+            message: 'Error in handleSubscriptionActivation'
+        });
+    }
 }
 
 /**
  * Handle subscription cancellation database operations
  */
-async function handleSubscriptionCancellation(eventData, clinic) {
+async function handleSubscriptionCancellation(eventData) {
     const {
         subscription_id,
-        end_date
+        customer_email
     } = eventData;
 
-    // Update subscription status to inactive
-    await subscriptionRepo.updateSubscriptionStatus(
+    const clinic = await clinicRepo.getClinicByEmail(customer_email);
+
+    if (!clinic) {
+        console.error('Clinic not found for subscription cancellation:', eventData);
+        return;
+    }
+
+    // Update subscription status to inactive with current date as end date
+    await subscriptionRepo.cancelSubscriptionStatus(
         clinic.id,
         false,
         subscription_id,
-        end_date ? new Date(end_date) : new Date()
+        new Date() // Set end date to current date
     );
 
     console.log(`Subscription cancelled for clinic: ${clinic.id}`);
@@ -286,13 +256,21 @@ async function handleSubscriptionCancellation(eventData, clinic) {
 /**
  * Handle subscription renewal database operations
  */
-async function handleSubscriptionRenewal(eventData, clinic) {
+async function handleSubscriptionRenewal(eventData) {
     const {
         subscription_id,
-        amount
+        customer_email,
+        start_date
     } = eventData;
 
     // Get subscription tier
+    const clinic = await clinicRepo.getClinicByEmail(customer_email);
+
+    if (!clinic) {
+        console.error('Clinic not found for renewal:', customer_email);
+        return;
+    }
+
     const subscriptionTier = await subscriptionRepo.getSubscriptionTier(clinic.id);
 
     if (!subscriptionTier) {
@@ -300,26 +278,38 @@ async function handleSubscriptionRenewal(eventData, clinic) {
         return;
     }
 
-    // Create subscription history record for renewal payment
-    if (amount) {
-        await subscriptionRepo.createSubscriptionHistory(
-            clinic.id,
-            subscriptionTier.id,
-            parseFloat(amount)
-        );
-    }
+    // Calculate new end date for renewal (30 days from current date or start_date)
+    const renewalStartDate = start_date ? new Date(start_date) : new Date();
+    const newEndDate = new Date(renewalStartDate);
+    newEndDate.setDate(newEndDate.getDate() + 30); // Add 30 days for monthly renewal
 
-    console.log(`Subscription renewed for clinic: ${clinic.id}`);
+    // Update subscription with new end date
+    await subscriptionRepo.renewalSubscriptionStatus(
+        clinic.id,
+        true,
+        subscription_id,
+        newEndDate
+    );
+
+    console.log(`Subscription renewed for clinic: ${clinic.id} - New end date: ${newEndDate.toISOString()}`);
 }
 
 /**
  * Handle payment failure database operations
  */
-async function handlePaymentFailure(eventData, clinic) {
+async function handlePaymentFailure(eventData) {
     const {
         subscription_id,
+        customer_email,
         failure_reason
     } = eventData;
+
+    const clinic = await clinicRepo.getClinicByEmail(customer_email);
+
+    if (!clinic) {
+        console.error('Clinic not found for payment failure:', customer_email);
+        return;
+    }
 
     // Log payment failure (you might want to create a separate table for this)
     console.log(`Payment failed for clinic: ${clinic.id}, reason: ${failure_reason}`);
@@ -327,11 +317,3 @@ async function handlePaymentFailure(eventData, clinic) {
     // You could also update subscription status to indicate payment issues
     // await subscriptionRepo.updateSubscriptionStatus(clinic.id, false, subscription_id);
 }
-
-/**
- * Check if a string is a valid UUID format
- */
-function isValidUUID(str) {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(str);
-} 

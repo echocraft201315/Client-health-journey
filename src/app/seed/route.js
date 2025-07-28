@@ -260,7 +260,6 @@ async function seedSubscriptionTier() {
         "startDate" DATE,
         "endDate" DATE,
         "isActive" BOOLEAN DEFAULT FALSE,
-        "subscriptionProvider" VARCHAR(50) DEFAULT 'ghl',
         "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );

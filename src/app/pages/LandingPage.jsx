@@ -177,13 +177,13 @@ const LandingPage = () => {
             </div>
           </div>
 
-          <div className="mt-12 text-center">
+          {/* <div className="mt-12 text-center">
             <Link href="/clinicRegister">
               <Button size="lg" className="gap-2">
                 Register Your Clinic <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
 
