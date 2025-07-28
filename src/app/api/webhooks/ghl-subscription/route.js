@@ -158,7 +158,6 @@ async function handleSubscriptionActivation(eventData) {
                     subscription_id,
                     startDate,
                     endDate,
-                    new Date(),
                     true
                 );
             }
@@ -170,8 +169,6 @@ async function handleSubscriptionActivation(eventData) {
                     subscription_id,
                     startDate,
                     endDate,
-                    new Date(),
-                    new Date(),
                     true
                 );
             }
@@ -191,8 +188,6 @@ async function handleSubscriptionActivation(eventData) {
                     subscription_id,
                     startDate,
                     endDate,
-                    new Date(),
-                    new Date(),
                     true
                 );
                 const adminUser = await userRepo.createAdminUser(
