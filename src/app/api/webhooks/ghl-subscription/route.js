@@ -79,7 +79,7 @@ function mapGHLStatusToTrigger(ghlStatus) {
         'activated': 'subscription.activated',
         'created': 'subscription.activated',
         'incomplete': 'subscription.activated', // Handle incomplete status
-        'cancelled': 'subscription.cancelled',
+        'canceled': 'subscription.cancelled',
         'deactivated': 'subscription.cancelled',
         'failed': 'subscription.payment_failed',
         'payment_failed': 'subscription.payment_failed',
@@ -231,7 +231,7 @@ async function handleSubscriptionCancellation(eventData) {
     } = eventData;
 
     const clinic = await clinicRepo.getClinicByEmail(customer_email);
-
+    console.log(`Subscription cancelled for clinic: ${clinic.id}`);
     if (!clinic) {
         console.error('Clinic not found for subscription cancellation:', eventData);
         return;
@@ -245,7 +245,7 @@ async function handleSubscriptionCancellation(eventData) {
         new Date() // Set end date to current date
     );
 
-    console.log(`Subscription cancelled for clinic: ${clinic.id}`);
+
 }
 
 /**
