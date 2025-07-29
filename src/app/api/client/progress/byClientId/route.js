@@ -9,9 +9,17 @@ import { AIReviewRepo } from "@/app/lib/db/aiReviewRepo";
 
 export async function POST(request) {
   try {
-    const { clientId, current } = await request.json();
+    const { clientId, current, timeRange } = await request.json();
     const email = await clientRepo.getEmailById(clientId);
-    const progressData = await clientRepo.getProgressbyClient(email, current);
+
+    let progressData;
+    if (timeRange) {
+      // Use the existing getProgressdataByRange method for week/month options
+      progressData = await clientRepo.getProgressdataByRange(email, timeRange);
+    } else {
+      // Use the current method for default behavior (7 days)
+      progressData = await clientRepo.getProgressbyClient(email, current);
+    }
 
     const start = await clientRepo.initialState(email);
 

@@ -224,7 +224,7 @@ function getMicronutrientData(micronutrientTotals) {
     .sort((a, b) => b.percentOfTarget - a.percentOfTarget);
 }
 
-export default function CoachReport({checkIns,loading,selectedClient}) {
+export default function CoachReport({checkIns,loading,selectedClient,timeRange}) {
   const [activeTab, setActiveTab] = useState("overview");
   const [isOpen, setIsOpen] = useState(false);
   const {user} = useAuth();
@@ -889,7 +889,7 @@ export default function CoachReport({checkIns,loading,selectedClient}) {
                 <Card className="p-4">
                   <div className="flex items-center gap-2 mb-4">
                     <Bot className="w-5 h-5" />
-                    <h2 className="font-semibold">Your AI Health Assistant(weekly trend) 🤖</h2>
+                    <h2 className="font-semibold">Your AI Health Assistant({timeRange === "week" ? "weekly" : "monthly"} trend) 🤖</h2>
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
@@ -1030,13 +1030,13 @@ export default function CoachReport({checkIns,loading,selectedClient}) {
             {activeTab === "trends" && (
               <div className="space-y-6">
                 {/* Daily Averages */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <Card>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-blue-500">{Number((portionsArray?.reduce((sum, item) => {const val = Number(item.proteinPortion);
     return sum + (isNaN(val) ? 0 : val)}, 0) / (portionsArray?.length || 1)).toFixed(1))} g</div>
                       <div className="text-xs text-gray-500">Avg Daily Protein</div>
-                      <div className="text-xs text-gray-500">7 day avg week</div>
+                      <div className="text-xs text-gray-500">{timeRange === "week" ? "7 day avg" : "30 day avg"}</div>
                     </div>
                   </Card>
                   <Card>
@@ -1044,7 +1044,7 @@ export default function CoachReport({checkIns,loading,selectedClient}) {
                       <div className="text-2xl font-bold text-orange-500">{Number((portionsArray?.reduce((sum, item) => {const val = Number(item.carbsPortion);
     return sum + (isNaN(val) ? 0 : val)}, 0) / (portionsArray?.length || 1)).toFixed(1))} g</div>
                       <div className="text-xs text-gray-500">Avg Daily Carbs</div>
-                      <div className="text-xs text-gray-500">7 day avg week</div>
+                      <div className="text-xs text-gray-500">{timeRange === "week" ? "7 day avg" : "30 day avg"}</div>
                     </div>
                   </Card>
                   <Card>
@@ -1052,6 +1052,7 @@ export default function CoachReport({checkIns,loading,selectedClient}) {
                       <div className="text-2xl font-bold text-purple-500">{Number((portionsArray?.reduce((sum, item) => {const val = Number(item.fatsPortion);
     return sum + (isNaN(val) ? 0 : val)}, 0) / (portionsArray?.length || 1)).toFixed(1))} g</div>
                       <div className="text-xs text-gray-500">Avg Daily Fat</div>
+                      <div className="text-xs text-gray-500">{timeRange === "week" ? "7 day avg" : "30 day avg"}</div>
                     </div>
                   </Card>
                   <Card>
@@ -1059,9 +1060,46 @@ export default function CoachReport({checkIns,loading,selectedClient}) {
                       <div className="text-2xl font-bold text-green-500">{Number((portionsArray?.reduce((sum, item) => {const val = Number(item.vegetablesPortion);
     return sum + (isNaN(val) ? 0 : val)}, 0) / (portionsArray?.length || 1)).toFixed(1))} g</div>
                       <div className="text-xs text-gray-500">Avg Daily Vegetables</div>
+                      <div className="text-xs text-gray-500">{timeRange === "week" ? "7 day avg" : "30 day avg"}</div>
                     </div>
                   </Card>
                 </div>
+
+                {/* Time Range Toggle */}
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold">Time Range</h3>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setTimeRange("week")}
+                        className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                          timeRange === "week"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        Week
+                      </button>
+                      <button
+                        onClick={() => setTimeRange("month")}
+                        className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                          timeRange === "month"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        Month
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {timeRange === "week" 
+                      ? "Showing data for the last 7 days" 
+                      : "Showing data for the last 30 days"
+                    }
+                  </p>
+                </Card>
+
                 {/* Trend Charts */}
                 <div className="grid grid-cols-1 gap-6">
                   <TrendChart

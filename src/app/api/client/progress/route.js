@@ -27,16 +27,22 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const { clientId, current } = await request.json();
+    const { clientId, current, timeRange } = await request.json();
     const user = await userRepo.getUserById(clientId);
     if (!user) {
       return NextResponse.json({ status: false, message: "User not found" });
     }
 
-    const progressData = await clientRepo.getProgressbyClient(user.email, current);
+    let progressData;
+    if (timeRange) {
+      // Use the existing getProgressdataByRange method for week/month options
+      progressData = await clientRepo.getProgressdataByRange(user.email, timeRange);
+    } else {
+      // Use the current method for default behavior (7 days)
+      progressData = await clientRepo.getProgressbyClient(user.email, current);
+    }
 
     const start = await clientRepo.initialState(user.email);
-
     const aiReview = await AIReviewRepo.getReviewbyClientEmail(user.email)
 
     let program = null;

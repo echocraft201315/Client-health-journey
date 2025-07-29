@@ -27,6 +27,7 @@ const CoachReportsPage = () => {
   const [historicalData, sethistoricalData] = useState([]);
   const [selectedClient, setSelectedClient] = useState("");
   const [checkInData, setCheckInData] = useState([]);
+  const [timeRange, setTimeRange] = useState("week"); // Add timeRange state
 
   const fetchActiveClients = async () => {
     try {
@@ -116,7 +117,7 @@ const CoachReportsPage = () => {
         setCheckInLoading(true);
         const response = await fetch("/api/client/progress/byClientId", {
           method: "POST",
-          body: JSON.stringify({ clientId: selectedClient, current: new Date() }),
+          body: JSON.stringify({ clientId: selectedClient, current: new Date(), timeRange }),
         });
         const data = await response.json();
         if (data.status) {
@@ -131,7 +132,7 @@ const CoachReportsPage = () => {
     if (selectedClient) {
       fetchCheckInsbyClient();
     }
-  }, [selectedClient]);
+  }, [selectedClient, timeRange]); // Add timeRange to dependencies
 console.log("selected", checkInData)
   if (isLoading) {
     return (
@@ -217,6 +218,29 @@ console.log("selected", checkInData)
                 </SelectContent>
               </Select>
 
+              {/* Time Range Toggle */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setTimeRange("week")}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    timeRange === "week"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Week
+                </button>
+                <button
+                  onClick={() => setTimeRange("month")}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    timeRange === "month"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Month
+                </button>
+              </div>
             </div>
           </div>
 
@@ -239,6 +263,7 @@ console.log("selected", checkInData)
                 checkIns={checkInData} 
                 loading={checkInLoading} 
                 selectedClient={selectedClient}
+                timeRange={timeRange}
               />
             ) : (
               <div className="text-center py-12">

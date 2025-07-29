@@ -289,6 +289,7 @@ export default function HealthTracker() {
   const [micronutrients, setMicronutrients] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [micronutrientLoading, setMicronutrientLoading] = useState(false);
+  const [timeRange, setTimeRange] = useState("week"); // Add timeRange state
   const router = useRouter();
   // Check if there's check-in data available
   const hasCheckInData = checkIns && checkIns.progressData && checkIns.progressData.length > 0;
@@ -325,17 +326,15 @@ export default function HealthTracker() {
   },[selectedDate])
 
   useEffect(()=> {
-    console.log("micronutrients",micronutrients)
   },[micronutrients])
   const micronutrientTotals = combineMicronutrientTotals(micronutrients);
   const micronutrientData = getMicronutrientData(micronutrientTotals);
-  console.log("micronutrientData",micronutrientTotals)
   const fetchCheckInsbyClient = async () => {
     try {
       setLoading(true);
       const response = await fetch("/api/client/progress", {
         method: "POST",
-        body: JSON.stringify({ clientId: user?.id, current: new Date() }),
+        body: JSON.stringify({ clientId: user?.id, current: new Date(), timeRange }),
       });
       const data = await response.json();
       if (data.status) {
@@ -349,9 +348,10 @@ export default function HealthTracker() {
   };
   
   useEffect(()=> {
-    fetchCheckInsbyClient();
-  },[user])
-  console.log("checkIn",checkIns)
+    if (user?.id) {
+      fetchCheckInsbyClient();
+    }
+  },[user, timeRange])
   const portionRule = {};
   const currentPortion = {};
   const meals = (JSON.parse(checkIns?.progressData?.[checkIns?.progressData?.length - 1]?.nutrition || "[]")).map((item, idx) => {
@@ -400,13 +400,11 @@ export default function HealthTracker() {
     return currentPortion;
   });
 
-  console.log("portionArray",portionsArray)
   const weightTrend = checkIns?.progressData?.map(item => ({
     weight: item.weight,
     selectedDate: item.selectedDate || null
   }));
 
-  console.log("checkIns",checkIns)
   const Nutrient = ({ value, label, color }) => {
     return (
       <div className={`p-4 rounded-md ${color}`}>
@@ -731,6 +729,39 @@ export default function HealthTracker() {
           // No data warning message
           <div className="text-center py-12">
             <div className="max-w-md mx-auto">
+              {/* Time Range Toggle for No Data */}
+              <Card className="p-4 mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold">Data Time Range</h3>
+                    <p className="text-sm text-gray-600">
+                      {timeRange === "week" 
+                        ? "Showing data for the last 7 days" 
+                        : "Showing data for the last 30 days"
+                      }
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={timeRange === "week" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setTimeRange("week")}
+                      className={timeRange === "week" ? "bg-blue-600 text-white" : ""}
+                    >
+                      Week
+                    </Button>
+                    <Button
+                      variant={timeRange === "month" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setTimeRange("month")}
+                      className={timeRange === "month" ? "bg-blue-600 text-white" : ""}
+                    >
+                      Month
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+
               <div className="mb-6">
                 <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
                   <svg 
@@ -863,6 +894,39 @@ export default function HealthTracker() {
               </div>
             </Card>
 
+            {/* Time Range Toggle for Overview */}
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold">Data Time Range</h3>
+                  <p className="text-sm text-gray-600">
+                    {timeRange === "week" 
+                      ? "Showing data for the last 7 days" 
+                      : "Showing data for the last 30 days"
+                    }
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant={timeRange === "week" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTimeRange("week")}
+                    className={timeRange === "week" ? "bg-blue-600 text-white" : ""}
+                  >
+                    Week
+                  </Button>
+                  <Button
+                    variant={timeRange === "month" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTimeRange("month")}
+                    className={timeRange === "month" ? "bg-blue-600 text-white" : ""}
+                  >
+                    Month
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
             <div className="grid grid-cols-2 sm:flex w-full gap-2 bg-white rounded-[4px] p-1 shadow-md">
               <TabButton
                 tab="overview"
@@ -931,7 +995,7 @@ export default function HealthTracker() {
                 {checkIns?.aiReview?.[0]&&<Card className="p-4">
                   <div className="flex items-center gap-2 mb-4">
                     <Bot className="w-5 h-5" />
-                    <h2 className="font-semibold">Your AI Health Assistant(weekly trend) 🤖</h2>
+                    <h2 className="font-semibold">Your AI Health Assistant({timeRange === "week" ? "weekly" : "monthly"} trend) 🤖</h2>
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
@@ -1040,7 +1104,7 @@ export default function HealthTracker() {
                       <div className="text-2xl font-bold text-blue-500">{Number((portionsArray?.reduce((sum, item) => {const val = Number(item.proteinPortion);
     return sum + (isNaN(val) ? 0 : val)}, 0) / (portionsArray?.length || 1)).toFixed(1))} g</div>
                       <div className="text-xs text-gray-500">Avg Daily Protein</div>
-                      <div className="text-xs text-gray-500">7 day avg week</div>
+                      <div className="text-xs text-gray-500">{timeRange === "week" ? "7 day avg" : "30 day avg"}</div>
                     </div>
                   </Card>
                   <Card>
@@ -1048,7 +1112,7 @@ export default function HealthTracker() {
                       <div className="text-2xl font-bold text-orange-500">{Number((portionsArray?.reduce((sum, item) => {const val = Number(item.carbsPortion);
     return sum + (isNaN(val) ? 0 : val)}, 0) / (portionsArray?.length || 1)).toFixed(1))} g</div>
                       <div className="text-xs text-gray-500">Avg Daily Carbs</div>
-                      <div className="text-xs text-gray-500">7 day avg week</div>
+                      <div className="text-xs text-gray-500">{timeRange === "week" ? "7 day avg" : "30 day avg"}</div>
                     </div>
                   </Card>
                   <Card>
@@ -1056,6 +1120,7 @@ export default function HealthTracker() {
                       <div className="text-2xl font-bold text-purple-500">{Number((portionsArray?.reduce((sum, item) => {const val = Number(item.fatsPortion);
     return sum + (isNaN(val) ? 0 : val)}, 0) / (portionsArray?.length || 1)).toFixed(1))} g</div>
                       <div className="text-xs text-gray-500">Avg Daily Fat</div>
+                      <div className="text-xs text-gray-500">{timeRange === "week" ? "7 day avg" : "30 day avg"}</div>
                     </div>
                   </Card>
                   <Card>
@@ -1063,9 +1128,42 @@ export default function HealthTracker() {
                       <div className="text-2xl font-bold text-green-500">{Number((portionsArray?.reduce((sum, item) => {const val = Number(item.vegetablesPortion);
     return sum + (isNaN(val) ? 0 : val)}, 0) / (portionsArray?.length || 1)).toFixed(1))} g</div>
                       <div className="text-xs text-gray-500">Avg Daily Vegetables</div>
+                      <div className="text-xs text-gray-500">{timeRange === "week" ? "7 day avg" : "30 day avg"}</div>
                     </div>
                   </Card>
                 </div>
+
+                {/* Time Range Toggle */}
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold">Time Range</h3>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={timeRange === "week" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setTimeRange("week")}
+                        className={timeRange === "week" ? "bg-blue-600 text-white" : ""}
+                      >
+                        Week
+                      </Button>
+                      <Button
+                        variant={timeRange === "month" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setTimeRange("month")}
+                        className={timeRange === "month" ? "bg-blue-600 text-white" : ""}
+                      >
+                        Month
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {timeRange === "week" 
+                      ? "Showing data for the last 7 days" 
+                      : "Showing data for the last 30 days"
+                    }
+                  </p>
+                </Card>
+
                 {/* Trend Charts */}
                 <div className="grid grid-cols-1 gap-6">
                   <TrendChart

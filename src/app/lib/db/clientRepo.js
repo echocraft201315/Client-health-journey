@@ -529,10 +529,12 @@ async function getProgressdataByRange(email, timeRange) {
 
   switch (timeRange) {
     case 'month':
+      // 30 days ago
       fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       break;
     case 'week':
-      fromDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      // 7 days ago (same as getProgressbyClient which uses 6 days + current day)
+      fromDate = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
       break;
     case 'quarter':
       fromDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
@@ -551,6 +553,7 @@ async function getProgressdataByRange(email, timeRange) {
   const progress = await sql`
     SELECT * FROM "CheckIn"
     WHERE "email" = ${email} AND "selectedDate" >= ${fromDate}
+    ORDER BY "selectedDate" ASC
   `;
 
   return progress;

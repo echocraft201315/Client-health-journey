@@ -25,6 +25,7 @@ const ReportsPage = () => {
   const [coaches, setCoaches] = useState([]);
   const [checkInData, setCheckInData] = useState([]);
   const [checkInLoading, setCheckInLoading] = useState(false);
+  const [timeRange, setTimeRange] = useState("week"); // Add timeRange state
 
   const fetchRevenueData = async () => {
     try {
@@ -120,7 +121,7 @@ const ReportsPage = () => {
         setCheckInLoading(true);
         const response = await fetch("/api/client/progress/byClientId", {
           method: "POST",
-          body: JSON.stringify({ clientId: selectedClient, current: new Date() }),
+          body: JSON.stringify({ clientId: selectedClient, current: new Date(), timeRange }),
         });
         const data = await response.json();
         if (data.status) {
@@ -135,7 +136,7 @@ const ReportsPage = () => {
     if (selectedClient) {
       fetchCheckInsbyClient();
     }
-  }, [selectedClient]);
+  }, [selectedClient, timeRange]); // Add timeRange to dependencies
 
   if (isLoading) {
     return (
@@ -258,6 +259,30 @@ const ReportsPage = () => {
             ))}
           </SelectContent>
         </Select>
+
+        {/* Time Range Toggle */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setTimeRange("week")}
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+              timeRange === "week"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Week
+          </button>
+          <button
+            onClick={() => setTimeRange("month")}
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+              timeRange === "month"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Month
+          </button>
+        </div>
             </div>
           </div>
         </CardHeader>
@@ -267,7 +292,7 @@ const ReportsPage = () => {
       </Card>
       <div>
           {selectedClient?
-          (<CoachReport checkIns={checkInData} loading={checkInLoading}/>
+          (<CoachReport checkIns={checkInData} loading={checkInLoading} timeRange={timeRange}/>
 
           ):(
               ""
