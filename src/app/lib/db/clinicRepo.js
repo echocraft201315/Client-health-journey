@@ -83,17 +83,51 @@ async function getNumWeeklyActivities() {
   }
 }
 
-async function getRecentactivity(clinicId) {
+async function getRecentactivityByRange(clinicId, timeRange) {
+  let cutoffDate;
+  const now = new Date();
+
+  if (timeRange === "week") {
+    cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  } else if (timeRange === "month") {
+    cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  } else {
+    // Default to all activities if no valid timeRange
+    return await sql`
+      SELECT * FROM "Activity"
+      WHERE "clinicId" = ${clinicId}
+      ORDER BY "timeStamp" DESC
+    `;
+  }
+
   return await sql`
     SELECT * FROM "Activity"
     WHERE "clinicId" = ${clinicId}
+    AND "timeStamp" >= ${cutoffDate}
     ORDER BY "timeStamp" DESC
   `;
 }
 
-async function getAllRecentactivity() {
+
+async function getAllRecentactivityByRange(timeRange) {
+  let cutoffDate;
+  const now = new Date();
+
+  if (timeRange === "week") {
+    cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  } else if (timeRange === "month") {
+    cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  } else {
+    // Default to all activities if no valid timeRange
+    return await sql`
+      SELECT * FROM "Activity"
+      ORDER BY "timeStamp" DESC
+    `;
+  }
+
   return await sql`
     SELECT * FROM "Activity"
+    WHERE "timeStamp" >= ${cutoffDate}
     ORDER BY "timeStamp" DESC
   `;
 }
@@ -386,13 +420,13 @@ export const clinicRepo = {
   deleteClinic,
   getnumcoachesbyId,
   getNumWactiveCount,
-  getRecentactivity,
+  getRecentactivityByRange,
   getCheckInsbyId,
   fetchRevenueData,
   fetchsubscriptionData,
   fetchTotalRevenue,
   getCheckIns,
-  getAllRecentactivity,
+  getAllRecentactivityByRange,
   fetchAllRevenueData,
   fetchAllsubscriptionData,
   getAllClinics,

@@ -94,7 +94,7 @@ export async function POST(request) {
         notes
       });
       const progressData = await clientRepo.getProgressbyClient(email, current);
-
+      const progressMonthlyData = await clientRepo.getProgressdataByRange(email,"month");
       const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
       });
@@ -104,6 +104,7 @@ You are a world-class digital health coach AI. Your task is to analyze a clientâ
 1. Input Data:
 - Clientâ€™s Submitted Today Check-In Data (JSON): ${jsonCheckIn}
 - Clientâ€™s Submitted Weekly Check-In Data (JSON): ${JSON.stringify(progressData)}
+- Clientâ€™s Submitted Monthly Check-In Data (JSON): ${JSON.stringify(progressMonthlyData)}
 - Program Details (JSON): ${jsonProgram}
 - Client Profile (JSON): ${jsonClientProfile}
 2. Instructions:
@@ -121,6 +122,7 @@ You are a world-class digital health coach AI. Your task is to analyze a clientâ
 IMPORTANT: Respond with ONLY a valid JSON object in this exact format(not including any other string line like "json" at first):
 {
   "weeklyTrend": string,
+  "monthlyTrend": string,
   "todaySummary": string,
   "today_Review_and_Recommendation": string, // Reference meals as "Meal 1", "Meal 2", etc., and include detailed numbers (grams, ounces, servings, etc.) in your feedback.
   "complianceScore": number,

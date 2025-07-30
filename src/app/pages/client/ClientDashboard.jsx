@@ -14,13 +14,19 @@ const TUTORIAL_LINK = "https://wellness-journey-guide-w2hnbup.gamma.site/";
 function WelcomeModal({ open, onClose, onDontShowAgain }) {
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
-  const handleCheckbox = (e) => {
+  const handleCheckbox = async (e) => {
     setDontShowAgain(e.target.checked);
     if (e.target.checked) {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("client_welcome_seen", "1");
+      const response = await fetch("/api/client/welcome_seen", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (data.welcomeModal) {
+        onDontShowAgain();
       }
-      onDontShowAgain();
     }
   };
 
@@ -72,10 +78,14 @@ const ClientDashboard = () => {
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const seen = localStorage.getItem("client_welcome_seen");
-      if (!seen) setShowWelcome(true);
-    }
+    const fetchWelcomeModal = async () => {
+      const welcomeModal = await fetch("/api/client/welcome_seen");
+      const welcomeModalData = await welcomeModal.json();
+      if (!welcomeModalData.welcomeModal[0].welcomeModal) {
+        setShowWelcome(true);
+      }
+    };
+    fetchWelcomeModal();
   }, []);
 
   const handleDismiss = () => {
@@ -85,7 +95,6 @@ const ClientDashboard = () => {
   const handleDontShowAgain = () => {
     setShowWelcome(false);
   };
-
   return (
     <div className="space-y-6 px-2 sm:px-4 md:px-6 py-4 w-full max-w-5xl mx-auto">
       <WelcomeModal open={showWelcome} onClose={handleDismiss} onDontShowAgain={handleDontShowAgain} />

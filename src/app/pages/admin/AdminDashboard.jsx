@@ -19,6 +19,7 @@ const AdminDashboard = () => {
   const [recentActivities, setRecentActivities] = useState([]);
   const [clinicsSummary, setClinicsSummary] = useState([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
+  const [timeRange, setTimeRange] = useState("week");
 
 
   const fetchTotalClinics = async () => {
@@ -78,15 +79,19 @@ const AdminDashboard = () => {
       toast.error("Unable to get data");
     }
   };
-  const fetchrecentActivities = async () => {
+  const fetchrecentActivities = async (range = timeRange) => {
     try {
       setIsLoadingActivities(true);
-      const response = await fetch("/api/admin/dashboard/recentActivities");
+      const response = await fetch("/api/admin/dashboard/recentActivities", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ timeRange: range }),
+      });
       const data = await response.json();
       if (data.status) {
-        toast.success("Fetched successfully");
         setRecentActivities(data.recentActivity);
-        
       } else {
         setIsActivitiesError(true);
         toast.error(data.message);
@@ -115,15 +120,15 @@ const AdminDashboard = () => {
     fetchTotalClinics();
     fetchTotalCoaches();
     fetchweeklyActivitiesCount();
-    fetchrecentActivities();
-  }, []);
+    fetchrecentActivities(timeRange);
+  }, [timeRange]);
   
   const handleRefresh = () => {
     fetchClinics();
     fetchTotalClinics();
     fetchTotalCoaches();
     fetchweeklyActivitiesCount();
-    fetchrecentActivities();
+    fetchrecentActivities(timeRange);
   };
   const dashboardStats = {
     activeClinicCount: totalClinics || 0,
@@ -177,6 +182,8 @@ const AdminDashboard = () => {
             activities={recentActivities}
             isLoading={isLoadingActivities}
             isError={isActivitiesError}
+            timeRange={timeRange}
+            setTimeRange={setTimeRange}
           />
         </div>
       </div>

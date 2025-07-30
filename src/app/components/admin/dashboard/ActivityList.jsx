@@ -15,9 +15,10 @@ import {
   Users,
   Activity,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 
-const ActivityList = ({ activities, isLoading, isError }) => {
+const ActivityList = ({ activities, isLoading, isError, timeRange, setTimeRange }) => {
   // Helper function to determine which icon to show
   const getActivityIcon = (type) => {
     switch (type) {
@@ -33,25 +34,24 @@ const ActivityList = ({ activities, isLoading, isError }) => {
         return <Activity size={16} className="text-gray-500 mt-1" />;
     }
   };
-
-  const [showAll, setShowAll] = useState(false);
-
   return (
-    <Card>
+    <Card className="w-full h-[358px]">
       <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 gap-2">
         <CardTitle className="text-lg">Recent Activities</CardTitle>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowAll((e) => !e)}
-        >
-          View All
-        </Button>
+        <Select value={timeRange} onValueChange={setTimeRange}>
+          <SelectTrigger className="w-[100px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="week">Week</SelectItem>
+            <SelectItem value="month">Month</SelectItem>
+          </SelectContent>
+        </Select>
       </CardHeader>
-      <CardContent className="overflow-x-auto">
+      <CardContent className="overflow-x-auto overflow-y-scroll">
         {isLoading ? (
           <div className="space-y-4">
-            {Array(3)
+            {Array(4)
               .fill(0)
               .map((_, i) => (
                 <div key={i} className="flex items-start space-x-3">
@@ -77,37 +77,23 @@ const ActivityList = ({ activities, isLoading, isError }) => {
           </div>
         ) : !activities || activities.length === 0 ? (
           <div className="text-center py-4 text-gray-500">
-            No recent activities found
+            No activities found for the selected time range
           </div>
         ) : (
           <div className="space-y-4">
-            {showAll
-              ? activities.map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-3">
-                    {getActivityIcon(activity.type)}
-                    <div>
-                      <p className="text-sm font-medium">
-                        {activity.description}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {activity.timestamp}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              : activities.slice(0, 3).map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-3">
-                    {getActivityIcon(activity.type)}
-                    <div>
-                      <p className="text-sm font-medium">
-                        {activity.description}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {activity.timestamp}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+            {activities.map((activity) => (
+              <div key={activity.id} className="flex items-start space-x-3">
+                {getActivityIcon(activity.type)}
+                <div>
+                  <p className="text-sm font-medium">
+                    {activity.description}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(activity.timeStamp || activity.timestamp).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>

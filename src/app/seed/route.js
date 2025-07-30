@@ -170,7 +170,9 @@ async function seedClient() {
         "initialWeight" NUMERIC,
         "goalWeight" NUMERIC,
         "lastCheckIn" DATE,
-        "goals" TEXT[]
+        "goals" TEXT[],
+        "welcomeModal" BOOLEAN DEFAULT FALSE,
+        "dailyMessage" BOOLEAN DEFAULT FALSE
     );
   `;
 }

@@ -12,14 +12,20 @@ const MealHistoryComponent = ({ checkIn }) => {
     <Card className="mx-0 sm:mx-[24px] p-0">
       <CardHeader className="bg-[#F9FAFB]">
         <CardTitle className="text-sm sm:text-[14px] font-semibold pt-6 pb-3">
-          {checkIn
-            ? new Date(checkIn.selectedDate).toLocaleDateString(undefined, {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-                timeZone: "UTC",
-              })
-            : ""}
+          {checkIn && checkIn.selectedDate
+            ? (() => {
+                try {
+                  return new Date(checkIn.selectedDate).toLocaleDateString(undefined, {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                    timeZone: "UTC",
+                  });
+                } catch (error) {
+                  return "Invalid Date";
+                }
+              })()
+            : "No Date"}
         </CardTitle>
       </CardHeader>
       <CardContent className="text-sm sm:text-[14px] pb-6 px-1 sm:px-2">

@@ -18,24 +18,32 @@ const DripMessageCard = () => {
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const seen = localStorage.getItem("daily_drip_message_seen");
-      if (!seen) {
+    const fetchDailyMessage = async () => {
+      const dailyMessage = await fetch("/api/client/daily_message_seen");
+      const dailyMessageData = await dailyMessage.json();
+      if (!dailyMessageData.dailyMessage[0].dailyMessage) {
         setMessage(WELCOME_MESSAGE);
         setShowWelcome(true);
-        return;
       }
+      else{
+        setShowWelcome(false);
+        fetch("/api/client/daily-drip-message")
+        .then(res => res.json())
+        .then(data => setMessage(data.message))
+        .catch(() => setMessage("Welcome!"));      }
     }
-    fetch("/api/client/daily-drip-message")
-      .then(res => res.json())
-      .then(data => setMessage(data.message))
-      .catch(() => setMessage("Welcome!"));
+    fetchDailyMessage();
   }, []);
-
-  const handleCheckbox = (e) => {
+  const handleCheckbox = async (e) => {
     setDontShowAgain(e.target.checked);
-    if (e.target.checked && typeof window !== "undefined") {
-      localStorage.setItem("daily_drip_message_seen", "1");
+    if (e.target.checked) {
+      const response = await fetch("/api/client/daily_message_seen", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
       setShowWelcome(false);
       // Optionally, show the daily drip message after hiding welcome
       fetch("/api/client/daily-drip-message")

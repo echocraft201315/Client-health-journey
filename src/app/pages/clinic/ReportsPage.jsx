@@ -165,7 +165,7 @@ const ReportsPage = () => {
       </div>
 
       {/* Financial Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">
@@ -177,7 +177,6 @@ const ReportsPage = () => {
             <div className="text-2xl font-bold">
               {subscriptionData[0]?.plan || "N/A"}
             </div>
-            <p className="text-xs text-green-500">Active</p>
           </CardContent>
         </Card>
 
@@ -191,7 +190,7 @@ const ReportsPage = () => {
             {/* <p className="text-xs text-green-500">+1 from last month</p> */}
           </CardContent>
         </Card>
-
+{/* 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Subscription Price</CardTitle>
@@ -202,7 +201,7 @@ const ReportsPage = () => {
               {subscriptionData[0]?.price ? `$${subscriptionData[0]?.price}/month` : "N/A"}
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -292,7 +291,7 @@ const ReportsPage = () => {
       </Card>
       <div>
           {selectedClient?
-          (<CoachReport checkIns={checkInData} loading={checkInLoading} timeRange={timeRange}/>
+          (<CoachReport checkIns={checkInData} selectedClient={selectedClient} loading={checkInLoading} timeRange={timeRange}/>
 
           ):(
               ""

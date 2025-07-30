@@ -4,13 +4,15 @@ import { userRepo } from "@/app/lib/db/userRepo";
 import authOptions from "@/app/lib/authoption";
 import { clinicRepo } from "@/app/lib/db/clinicRepo";
 
-export async function GET() {
+
+export async function POST(request) {
     const session = await getServerSession(authOptions);
     if (!session) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     try {
+        const { timeRange } = await request.json();
         const email = session.user.email;
         const user = await userRepo.getUserByEmail(email);
         if (!user) {
@@ -19,8 +21,10 @@ export async function GET() {
         if (user.role !== "clinic_admin") {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
+
         const clinicId = user.clinic;
-        const recentActivity = await clinicRepo.getRecentactivity(clinicId);
+        const recentActivity = await clinicRepo.getRecentactivityByRange(clinicId, timeRange);
+
         return NextResponse.json({ status: true, recentActivity });
     } catch (error) {
         console.error(error);

@@ -18,21 +18,28 @@ import { Button } from "../../components/ui/button";
 import { Skeleton } from "../../components/ui/skeleton";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 
 const AdminActivitiesPage = () => {
   const [recentActivities, setRecentActivities] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [isActivitiesError, setIsActivitiesError]= useState(false)
-  const fetchrecentActivities = async () => {
+  const [isActivitiesError, setIsActivitiesError]= useState(false);
+  const [timeRange, setTimeRange] = useState("week");
+
+  const fetchrecentActivities = async (range = timeRange) => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/clinic/dashboard/recentActivities");
+      const response = await fetch("/api/clinic/dashboard/recentActivities", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ timeRange: range }),
+      });
       const data = await response.json();
       if (data.status) {
-        toast.success("Fetched successfully");
         setRecentActivities(data.recentActivity);
-        
       } else {
         setIsActivitiesError(true);
         toast.error(data.message);
@@ -45,8 +52,8 @@ const AdminActivitiesPage = () => {
     }
   };
   useEffect(() => {
-    fetchrecentActivities();
-  }, []);
+    fetchrecentActivities(timeRange);
+  }, [timeRange]);
 
   const getActivityIcon = (type) => {
     switch (type) {
@@ -154,16 +161,27 @@ const AdminActivitiesPage = () => {
             Recent platform activities across all clinics
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2"
-          disabled={isLoading}
-          onClick={() => fetchrecentActivities()}
-        >
-          <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
-          <span>Refresh</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-[100px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="week">Week</SelectItem>
+              <SelectItem value="month">Month</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            disabled={isLoading}
+            onClick={() => fetchrecentActivities(timeRange)}
+          >
+            <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
+            <span>Refresh</span>
+          </Button>
+        </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 gap-y-4 w-full">
         <div className="lg:col-span-2 overflow-x-auto">
@@ -209,7 +227,7 @@ const AdminActivitiesPage = () => {
                           {activity.description}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {activity.timestamp}
+                          {new Date(activity.timeStamp || activity.timestamp).toLocaleDateString()}
                         </p>
                       </div>
                     </div>

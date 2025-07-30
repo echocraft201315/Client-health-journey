@@ -1017,14 +1017,31 @@ export default function HealthTracker() {
                       </svg>
                       </span>
                       <div>
-                        {checkIns?.aiReview && JSON.parse(checkIns?.aiReview?.[0].content).weeklyTrend}
+                        {
+                        timeRange === "week" ? checkIns?.aiReview && JSON.parse(checkIns?.aiReview?.[0].content).weeklyTrend : checkIns?.aiReview && JSON.parse(checkIns?.aiReview?.[0].content).monthlyTrend
+                        }
                       </div>
                       </div>
                   </div>
                 </Card>}
                 {/* Today's Macros */}
                 <Card className="p-4">
-                  <h2 className="font-semibold mb-4">Today's Macros</h2>
+                  <h2 className="font-semibold mb-4">{(() => {
+                    const lastCheckInDate = checkIns?.progressData?.[checkIns?.progressData?.length - 1]?.selectedDate;
+                    if (lastCheckInDate) {
+                      try {
+                        return new Intl.DateTimeFormat('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          timeZone: 'UTC'
+                        }).format(new Date(lastCheckInDate));
+                      } catch (error) {
+                        return 'Latest';
+                      }
+                    }
+                    return 'Latest';
+                  })()} Macros</h2>
                   <div className="space-y-2">
                     <MacroBar label="Protein" current={currentPortion?.proteinPortion} total={Math.floor(portionRule?.protein)} />
                     <MacroBar label="Fruit" current={currentPortion?.fruitPortion} total={Math.floor(portionRule?.fruit)} />
@@ -1047,7 +1064,22 @@ export default function HealthTracker() {
                 <Card className="p-4">
                   <div className="flex items-center gap-2 mb-4">
                     <Bot className="w-5 h-5" />
-                    <h2 className="font-semibold">Today's Review 🤖</h2>
+                    <h2 className="font-semibold">{(() => {
+                      const lastCheckInDate = checkIns?.progressData?.[checkIns?.progressData?.length - 1]?.selectedDate;
+                      if (lastCheckInDate) {
+                        try {
+                          return new Intl.DateTimeFormat('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            timeZone: 'UTC'
+                          }).format(new Date(lastCheckInDate));
+                        } catch (error) {
+                          return 'Latest';
+                        }
+                      }
+                      return 'Latest';
+                    })()} Review 🤖</h2>
                   </div>
                   <div className="space-y-3">
                     <div className="p-3 bg-yellow-50 rounded-lg">

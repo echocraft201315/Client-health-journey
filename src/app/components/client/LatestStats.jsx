@@ -99,7 +99,13 @@ const LatestStats = () => {
             <div className="pt-2">
               <span className="text-xs text-gray-500">
                 Last updated:{" "}
-                {new Date(checkIns[0].selectedDate).toLocaleDateString()}
+                {(() => {
+                  try {
+                    return new Date(checkIns[0].selectedDate).toLocaleDateString();
+                  } catch (error) {
+                    return 'Recently';
+                  }
+                })()}
               </span>
             </div>
           </>

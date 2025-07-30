@@ -18,6 +18,7 @@ const AdminDashboard = () => {
   const [isStatsError, setIsStatsError] = useState(false);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
   const [isActivitiesError, setIsActivitiesError] = useState(false);
+  const [timeRange, setTimeRange] = useState("week"); // Add timeRange state
 
   const fetchTotalCoaches = async () => {
     try {
@@ -57,13 +58,18 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchrecentActivities = async () => {
+  const fetchrecentActivities = async (range = timeRange) => {
     try {
       setIsLoadingActivities(true);
-      const response = await fetch("/api/clinic/dashboard/recentActivities");
+      const response = await fetch("/api/clinic/dashboard/recentActivities", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ timeRange: range }),
+      });
       const data = await response.json();
       if (data.status) {
-        toast.success("Fetched successfully");
         setRecentActivities(data.recentActivity);
       } else {
         setIsActivitiesError(true);
@@ -101,11 +107,18 @@ const AdminDashboard = () => {
     setIsLoadingActivities(false);
   }, []);
 
+  // Refetch activities when timeRange changes
+  useEffect(() => {
+    if (timeRange) {
+      fetchrecentActivities(timeRange);
+    }
+  }, [timeRange]);
+
   const handleRefresh = () => {
     fetchClientsNum();
     fetchTotalCoaches();
     fetchweeklyActivitiesCount();
-    fetchrecentActivities();
+    fetchrecentActivities(timeRange);
   };
 
   const dashboardStats = {
@@ -149,13 +162,14 @@ const AdminDashboard = () => {
       </div>
 
       {/* Stats Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 gap-y-4 mt-4 w-full">
+      <div className="lg:col-span-2">
       <DashboardStats
         stats={dashboardStats}
         isLoading={isLoadingStats}
         isClinicAdmin={isClinicAdmin}
       />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 gap-y-4 mt-4 w-full">
+ 
         <div className="lg:col-span-2 overflow-x-auto">
           <ClinicsTable
             dashboardStats={dashboardStats}
@@ -164,14 +178,18 @@ const AdminDashboard = () => {
             isClinicAdmin={isClinicAdmin}
           />
         </div>
+      </div>
 
-        <div className="w-full">
-          <ActivityList
-            activities={recentActivities}
-            isLoading={isLoadingActivities}
-            isError={isActivitiesError}
-          />
-        </div>
+
+        <div className="w-full h-full lg:col-span-1">
+            <ActivityList
+              activities={recentActivities}
+              isLoading={isLoadingActivities}
+              isError={isActivitiesError}
+              timeRange={timeRange}
+              setTimeRange={setTimeRange}
+            />
+          </div>
       </div>
     </div>
   );

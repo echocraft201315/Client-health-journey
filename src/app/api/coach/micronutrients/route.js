@@ -16,6 +16,7 @@ export async function POST(request) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
   const { selectedDate, selectedClient } = await request.json();
+
   try {
     const client = await clientRepo.getClientById(selectedClient);
     if (!client) {
