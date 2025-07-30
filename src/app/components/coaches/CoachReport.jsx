@@ -233,11 +233,28 @@ export default function CoachReport({checkIns,loading,selectedClient,timeRange})
   const [micronutrientLoading, setMicronutrientLoading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [loadingImages, setLoadingImages] = useState(true);
+  const [client,setClient] = useState({});
   const handleSelect = (date) => {
     setSelectedDate(date);
   };
   console.log("selectedDate",selectedDate);
   console.log("selectedClient",selectedClient);
+
+  const fetchClient = async () => {
+    const response = await fetch("/api/coach/client_details", {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        selectedClient:selectedClient
+      }),
+    });
+    const data = await response.json();
+    console.log("client",data.client);
+    setClient(data.client);
+  }
+  console.log("client",client);
 
   const fetchMicronutrients = async () => {
     try {
@@ -332,6 +349,7 @@ export default function CoachReport({checkIns,loading,selectedClient,timeRange})
   };
   useEffect(()=> {
     fetchImages();
+    fetchClient();
   },[selectedClient])
 
   useEffect(()=> {
@@ -763,7 +781,7 @@ export default function CoachReport({checkIns,loading,selectedClient,timeRange})
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <h1 className="text-2xl font-bold text-[#1F2937]">
-                    Welcome back, {checkIns?.progressData?.[0].name}!
+                    Welcome back, {client?.name}!
                   </h1>
                   <span className="text-2xl">👋</span>
                 </CardTitle>

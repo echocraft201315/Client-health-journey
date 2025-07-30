@@ -74,7 +74,7 @@ const ClinicsTable = ({
               </thead>
               <tbody>
                 {dashboardStats.clinicsSummary.map((clinic,index) => (
-                  <tr key={clinic.id} className="border-b hover:bg-gray-50">
+                  <tr key={index} className="border-b hover:bg-gray-50">
                     <td className="py-3">{clinic.name}</td>
                     <td className="py-3">
                       {clinic.coaches || clinic.coachesCount}

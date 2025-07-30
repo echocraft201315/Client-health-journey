@@ -285,11 +285,8 @@ console.log("selected", checkInData)
                       </svg>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      No Check-in Data Available
+                      No Check-in Data in this {timeRange}!
                     </h3>
-                    <p className="text-gray-600 mb-4">
-                      This client hasn't completed any daily check-ins yet. Once they start logging their meals and progress, you'll be able to view their detailed reports here.
-                    </p>
                   </div>
                   
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
