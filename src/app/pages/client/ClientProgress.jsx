@@ -418,7 +418,6 @@ export default function HealthTracker() {
   };
   const [mealData,setmeal] = useState({});
   const [mealTitle, setMealTitle] = useState("");
-  console.log("mealTitle",mealTitle)
   const showDetails = (macros,meal) => {
     setIsOpen(true);
     setmeal(macros);

@@ -466,8 +466,7 @@ export default function CoachReport({checkIns,loading,selectedClient,timeRange})
   };
   const [mealData,setmeal] = useState({});
   const [mealTitle, setMealTitle] = useState("");
-  console.log("mealTitle",mealTitle)
-    const showDetails = (macros,meal) => {
+  const showDetails = (macros,meal) => {
     setIsOpen(true);
     setmeal(macros);
     setMealTitle(meal); 
