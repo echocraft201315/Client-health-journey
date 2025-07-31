@@ -94,7 +94,7 @@ export async function POST(request) {
         notes
       });
       const progressData = await clientRepo.getProgressbyClient(email, current);
-      const progressMonthlyData = await clientRepo.getProgressdataByRange(email,"month");
+      const progressMonthlyData = await clientRepo.getProgressdataByRange(email, "month");
       const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
       });
@@ -196,8 +196,55 @@ All checkIn review and recommendation must be based on program totally.
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 2000,
       });
-      const aiReview = completion.choices[0].message.content || '';
-      const saveReview = await AIReviewRepo.createOrUpdateAIReview(email, aiReview);
+      let aiReview = completion.choices[0].message.content || '';
+
+      // Validate and fix AI review JSON
+      let validAiReview = null;
+
+      try {
+        // First, try to parse the response as-is
+        validAiReview = JSON.parse(aiReview);
+      } catch (parseError) {
+        console.log("Initial JSON parse failed, attempting to extract valid JSON:", parseError.message);
+
+        // Try to extract JSON from the response if it contains extra text
+        const jsonMatch = aiReview.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            validAiReview = JSON.parse(jsonMatch[0]);
+            console.log("Successfully extracted valid JSON from response");
+          } catch (extractError) {
+            console.log("Failed to extract valid JSON:", extractError.message);
+          }
+        }
+
+        // If still no valid JSON, create a fallback response
+        if (!validAiReview) {
+          console.log("Creating fallback AI review due to invalid JSON");
+          validAiReview = {
+            weeklyTrend: "Unable to analyze trends due to data processing issue",
+            monthlyTrend: "Unable to analyze trends due to data processing issue",
+            todaySummary: "Your check-in has been recorded successfully. Please check back later for a detailed review.",
+            today_Review_and_Recommendation: "Thank you for your check-in! We're processing your data and will provide a detailed review shortly.",
+            complianceScore: 5,
+            mealReview: ["Your meals have been recorded and are being reviewed."],
+            mealRecommendation: [
+              {
+                proteinPortion: 25,
+                carbsPortion: 30,
+                fatsPortion: 15,
+                foodnames: "Balanced meal",
+                description: "A balanced meal following your program guidelines",
+                ingredients: "Please refer to your program guidelines for specific recommendations"
+              }
+            ],
+            message: "Thank you for your check-in! We're working on your personalized review."
+          };
+        }
+      }
+
+      // Save the validated JSON to database
+      const saveReview = await AIReviewRepo.createOrUpdateAIReview(email, JSON.stringify(validAiReview));
     }
     return NextResponse.json({ status: true, checkin });
   } catch (error) {
