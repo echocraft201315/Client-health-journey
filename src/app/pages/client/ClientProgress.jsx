@@ -364,6 +364,7 @@ export default function HealthTracker() {
       item.other
     ]
       .filter(field => field && field !== null && field !== undefined && field !== '')
+      .filter((field, index, array) => array.indexOf(field) === index) // Remove duplicates
       .join(', ');
     const portion = {
       proteinPortion: item.proteinPortion,
@@ -416,9 +417,12 @@ export default function HealthTracker() {
     );
   };
   const [mealData,setmeal] = useState({});
-  const showDetails = (macros) => {
+  const [mealTitle, setMealTitle] = useState("");
+  console.log("mealTitle",mealTitle)
+  const showDetails = (macros,meal) => {
     setIsOpen(true);
     setmeal(macros);
+    setMealTitle(meal);
   };
   // Tab Button Component
   const TabButton = ({ tab, icon: Icon, label, isActive }) => (
@@ -492,7 +496,7 @@ export default function HealthTracker() {
     <>
       <Card
         className="p-4 space-y-3 hover:cursor-pointer"
-        onClick={()=>showDetails(macros)}
+        onClick={()=>showDetails(macros,meal)}
       >
         <div className="flex items-center justify-between">
           <div>
@@ -539,7 +543,7 @@ export default function HealthTracker() {
           <DialogHeader>
             <DialogTitle className="flex flex-row items-center justify-between pb-2">
               <div>
-                <CardTitle className="text-xl font-medium">{meal}</CardTitle>
+                <CardTitle className="text-xl font-medium">{mealTitle}</CardTitle>
               </div>
             </DialogTitle>
           </DialogHeader>
