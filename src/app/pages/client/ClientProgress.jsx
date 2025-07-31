@@ -362,7 +362,9 @@ export default function HealthTracker() {
       item.carbs,
       item.fats,
       item.other
-    ].join(', ');
+    ]
+      .filter(field => field && field !== null && field !== undefined && field !== '')
+      .join(', ');
     const portion = {
       proteinPortion: item.proteinPortion,
       fruitPortion: item.fruitPortion,
