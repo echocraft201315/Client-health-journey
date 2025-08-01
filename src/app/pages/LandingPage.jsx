@@ -66,8 +66,9 @@ const LandingPage = () => {
                   !session ? (
                     <Button
                       className="w-full sm:w-auto px-8 py-3 text-base font-medium bg-primary-600 hover:bg-primary-700 text-white transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                      onClick={() => router.push("/login")}
                     >
-                      <Link href="/login">Sign In</Link>
+                      Sign In
                     </Button>) :
                     (
                       <DropdownMenu>
