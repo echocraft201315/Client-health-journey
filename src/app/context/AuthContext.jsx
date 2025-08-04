@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { socket } from "@/socket";
+import { fetchWithSubscriptionCheck } from "@/app/lib/apiUtils";
 
 const AuthContext = createContext(undefined);
 
@@ -11,8 +12,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserData = async () => {
     try {
-      const res = await fetch(`/api/user/profile`);
-      const data = await res.json();
+      const data = await fetchWithSubscriptionCheck('/api/user/profile', {}, 'User fetch failed');
       if (data.success) {
         setUser(data.user);
       } else {
@@ -20,6 +20,10 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.error("Error fetching user data:", err);
+      if (err.message.includes('redirecting to login')) {
+        // The utility function already handled the redirect
+        return;
+      }
       signOut();
     }
   }
