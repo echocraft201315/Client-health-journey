@@ -27,8 +27,10 @@ export default withAuth(
         if (token?.email) {
             console.log('Checking subscription for user:', token.email);
             try {
-                // Use absolute URL to avoid self-referencing issues in production
-                const baseUrl = req.nextUrl.origin;
+                // Use the external URL from headers instead of internal server URL
+                const externalHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
+                const externalProto = req.headers.get('x-forwarded-proto') || 'http';
+                const baseUrl = `${externalProto}://${externalHost}`;
                 const checkUrl = `${baseUrl}/api/auth/check-subscription`;
                 console.log('Making request to:', checkUrl);
 
@@ -47,7 +49,7 @@ export default withAuth(
                 if (!response.ok) {
                     console.log('Response not ok - redirecting to login');
                     // If the subscription check API fails, redirect directly to login with error
-                    const loginUrl = new URL('/login', req.url);
+                    const loginUrl = new URL('/login', baseUrl);
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
                     console.log('Redirecting to:', loginUrl.toString());
@@ -63,7 +65,7 @@ export default withAuth(
                 if (!data.success || !data.isValid) {
                     console.log('Subscription invalid - redirecting to login');
                     // Redirect directly to login with error when subscription is inactive
-                    const loginUrl = new URL('/login', req.url);
+                    const loginUrl = new URL('/login', baseUrl);
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', data.message || 'Subscription is inactive');
                     console.log('Redirecting to:', loginUrl.toString());
@@ -76,7 +78,7 @@ export default withAuth(
                 console.log('Error message:', error.message);
                 console.log('Error stack:', error.stack);
                 // On error, redirect directly to login
-                const loginUrl = new URL('/login', req.url);
+                const loginUrl = new URL('/login', baseUrl);
                 loginUrl.searchParams.set('error', 'subscription_inactive');
                 loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
                 console.log('Error redirecting to:', loginUrl.toString());
