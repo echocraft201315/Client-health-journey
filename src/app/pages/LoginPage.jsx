@@ -15,6 +15,7 @@ import { signIn, signOut } from "next-auth/react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { apiFetch } from "@/app/lib/apiUtils";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -113,7 +114,13 @@ const LoginPage = () => {
 
         // Check subscription status before redirecting
         if (session?.user?.role !== "admin") {
-          const subscriptionResponse = await fetch("/api/auth/check-subscription");
+          const subscriptionResponse = await apiFetch("/api/auth/check-subscription");
+          
+          // If apiFetch returned a handled response (subscription inactive)
+          if (subscriptionResponse.success === false) {
+            return;
+          }
+          
           const subscriptionData = await subscriptionResponse.json();
           
           if (!subscriptionData.success || !subscriptionData.isValid) {

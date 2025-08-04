@@ -2,16 +2,25 @@
 import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { socket } from "@/socket";
+import { useRouter } from "next/navigation";
+import { apiFetch } from "@/app/lib/apiUtils";
 
 const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const { data: session } = useSession();
+  const router = useRouter();
 
   const fetchUserData = async () => {
     try {
-      const res = await fetch(`/api/user/profile`);
+      const res = await apiFetch(`/api/user/profile`);
+      
+      // If apiFetch returned a handled response (subscription inactive)
+      if (res.success === false) {
+        return;
+      }
+      
       const data = await res.json();
       if (data.success) {
         setUser(data.user);

@@ -1,42 +1,39 @@
 'use client'
 import { createContext, useContext, useEffect, useState } from "react";
-import { useAuth } from "./AuthContext";
+import { apiFetch } from "@/app/lib/apiUtils";
 
 const ClinicContext = createContext(undefined);
 
-export const ClinicProvider = ({ children }) => {
-  const { user } = useAuth();
+export const ClinicProvider = ({ children, clinicId }) => {
   const [clinic, setClinic] = useState(null);
-  const [clientLimit, setClientLimit] = useState(0);
-  const [planId, setPlanId] = useState(null);
-  const [currentPlan, setCurrentPlan] = useState(null);
 
-  useEffect(() => {
-    const fetchClinic = async (clinicId) => {
-      const res = await fetch(`/api/clinic/${clinicId}`);
+  const fetchClinicData = async () => {
+    try {
+      const res = await apiFetch(`/api/clinic/${clinicId}`);
+      
+      // If apiFetch returned a handled response (subscription inactive)
+      if (res.success === false) {
+        return;
+      }
+      
       const data = await res.json();
       if (data.success) {
         setClinic(data.clinic);
-        setClientLimit(data.clientLimit);
-        setPlanId(data.planId);
-        setCurrentPlan(data.currentPlan);
       }
+    } catch (err) {
+      console.error("Error fetching clinic data:", err);
     }
+  };
 
-    if (user?.clinic) {
-      fetchClinic(user.clinic);
-    }
-  }, [user]);
+  useEffect(() => {
+    fetchClinicData();
+  }, [clinicId]);
 
   return (
     <ClinicContext.Provider
       value={{
         clinic,
         setClinic,
-        clientLimit,
-        planId,
-        currentPlan,
-        setCurrentPlan,
       }}
     >
       {children}

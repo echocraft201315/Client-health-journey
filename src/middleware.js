@@ -3,10 +3,7 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
     async function middleware(req) {
-        console.log('Middleware triggered for:', req.nextUrl.pathname);
         const token = req.nextauth.token;
-        console.log('Token role:', token?.role);
-        console.log('Token email:', token?.email);
 
         // Skip subscription check for admin users
         if (token?.role === "admin") {
@@ -27,7 +24,19 @@ export default withAuth(
                 });
 
                 if (!response.ok) {
-                    // If the subscription check API fails, redirect directly to login with error
+                    // For API routes, return 401 instead of redirecting
+                    if (req.nextUrl.pathname.startsWith('/api/')) {
+                        return NextResponse.json(
+                            {
+                                success: false,
+                                message: 'Unable to verify subscription status',
+                                redirectTo: '/login?error=subscription_inactive&message=' + encodeURIComponent('Unable to verify subscription status. Please try again.')
+                            },
+                            { status: 401 }
+                        );
+                    }
+
+                    // For page routes, redirect to login
                     const loginUrl = new URL('/login', req.url);
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
@@ -35,12 +44,21 @@ export default withAuth(
                 }
 
                 const data = await response.json();
-                console.log('Data success:', data.success);
-                console.log('Data isValid:', data.isValid);
-                console.log('Condition check:', !data.success || !data.isValid);
 
                 if (!data.success || !data.isValid) {
-                    // Redirect directly to login with error when subscription is inactive
+                    // For API routes, return 401 instead of redirecting
+                    if (req.nextUrl.pathname.startsWith('/api/')) {
+                        return NextResponse.json(
+                            {
+                                success: false,
+                                message: 'Subscription inactive',
+                                redirectTo: '/login?error=subscription_inactive&message=' + encodeURIComponent(data.message || 'Subscription is inactive')
+                            },
+                            { status: 401 }
+                        );
+                    }
+
+                    // For page routes, redirect to login
                     const loginUrl = new URL('/login', req.url);
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', data.message || 'Subscription is inactive');
@@ -48,7 +66,19 @@ export default withAuth(
                 }
             } catch (error) {
                 console.log('Error checking subscription in middleware:', error);
-                // On error, redirect directly to login
+                // On error, handle API routes differently
+                if (req.nextUrl.pathname.startsWith('/api/')) {
+                    return NextResponse.json(
+                        {
+                            success: false,
+                            message: 'Unable to verify subscription status',
+                            redirectTo: '/login?error=subscription_inactive&message=' + encodeURIComponent('Unable to verify subscription status. Please try again.')
+                        },
+                        { status: 401 }
+                    );
+                }
+
+                // For page routes, redirect directly to login
                 const loginUrl = new URL('/login', req.url);
                 loginUrl.searchParams.set('error', 'subscription_inactive');
                 loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
