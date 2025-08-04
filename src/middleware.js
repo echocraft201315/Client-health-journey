@@ -5,14 +5,20 @@ export default withAuth(
     async function middleware(req) {
         const token = req.nextauth.token;
 
+        console.log('Middleware running for:', req.url);
+        console.log('User role:', token?.role);
+        console.log('User email:', token?.email);
+
         // Skip subscription check for admin users
         if (token?.role === "admin") {
+            console.log('Skipping subscription check for admin user');
             return NextResponse.next();
         }
 
         // For non-admin users (including clinic_admins), check subscription status
         if (token?.email) {
             try {
+                console.log('Checking subscription for user:', token.email);
                 // Use absolute URL to avoid self-referencing issues in production
                 const baseUrl = req.nextUrl.origin;
                 const response = await fetch(`${baseUrl}/api/auth/check-subscription`, {
@@ -23,31 +29,43 @@ export default withAuth(
                     },
                 });
 
+                console.log('Subscription check response status:', response.status);
+
                 if (!response.ok) {
-                    // If the subscription check API fails, redirect directly to login with error
-                    const loginUrl = new URL('/login', req.url);
-                    loginUrl.searchParams.set('error', 'subscription_inactive');
-                    loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
-                    return NextResponse.redirect(loginUrl);
+                    console.log('Subscription check API failed, redirecting to signout');
+                    // If the subscription check API fails, redirect to signout
+                    const logoutUrl = new URL('/api/auth/signout', req.url);
+                    const callbackUrl = `/api/auth/subscription-signout?error=subscription_inactive&message=${encodeURIComponent('Unable to verify subscription status. Please try again.')}`;
+                    logoutUrl.searchParams.set('callbackUrl', callbackUrl);
+                    console.log('Redirecting to:', logoutUrl.toString());
+                    return NextResponse.redirect(logoutUrl);
                 }
 
                 const data = await response.json();
+                console.log('Subscription check result:', data);
 
                 if (!data.success || !data.isValid) {
-                    // Redirect directly to login with error when subscription is inactive
-                    const loginUrl = new URL('/login', req.url);
-                    loginUrl.searchParams.set('error', 'subscription_inactive');
-                    loginUrl.searchParams.set('message', data.message || 'Subscription is inactive');
-                    return NextResponse.redirect(loginUrl);
+                    console.log('Subscription is inactive, redirecting to signout');
+                    // Redirect to signout when subscription is inactive
+                    const logoutUrl = new URL('/api/auth/signout', req.url);
+                    const callbackUrl = `/api/auth/subscription-signout?error=subscription_inactive&message=${encodeURIComponent(data.message || 'Subscription is inactive')}`;
+                    logoutUrl.searchParams.set('callbackUrl', callbackUrl);
+                    console.log('Redirecting to:', logoutUrl.toString());
+                    return NextResponse.redirect(logoutUrl);
                 }
+
+                console.log('Subscription check passed, allowing request');
             } catch (error) {
                 console.log('Error checking subscription in middleware:', error);
-                // On error, redirect directly to login
-                const loginUrl = new URL('/login', req.url);
-                loginUrl.searchParams.set('error', 'subscription_inactive');
-                loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
-                return NextResponse.redirect(loginUrl);
+                // On error, redirect to signout
+                const logoutUrl = new URL('/api/auth/signout', req.url);
+                const callbackUrl = `/api/auth/subscription-signout?error=subscription_inactive&message=${encodeURIComponent('Unable to verify subscription status. Please try again.')}`;
+                logoutUrl.searchParams.set('callbackUrl', callbackUrl);
+                console.log('Redirecting to:', logoutUrl.toString());
+                return NextResponse.redirect(logoutUrl);
             }
+        } else {
+            console.log('No user email found in token');
         }
 
         return NextResponse.next();
