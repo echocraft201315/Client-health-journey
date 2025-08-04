@@ -29,7 +29,8 @@ export default withAuth(
             try {
                 // Use the external URL from headers instead of internal server URL
                 const externalHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
-                const externalProto = req.headers.get('x-forwarded-proto') || 'http';
+                // Force HTTPS in production to avoid mixed content errors
+                const externalProto = process.env.NODE_ENV === 'production' ? 'https' : (req.headers.get('x-forwarded-proto') || 'http');
                 const baseUrl = `${externalProto}://${externalHost}`;
                 const checkUrl = `${baseUrl}/api/auth/check-subscription`;
                 console.log('Making request to:', checkUrl);
