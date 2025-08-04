@@ -1,5 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import { userRepo } from "@/app/lib/db/userRepo";
+import { checkSubscriptionStatus } from "@/app/lib/subscriptionCheck";
 
 const authOptions = {
     providers: [
@@ -52,6 +53,25 @@ const authOptions = {
                 session.user.name = token.name;
                 session.user.email = token.email;
                 session.user.role = token.role;
+
+                // Check subscription status for non-admin users
+                if (session.user.role !== "admin") {
+                    try {
+                        const user = await userRepo.getUserByEmail(session.user.email);
+                        if (user) {
+                            const subscriptionCheck = await checkSubscriptionStatus(user.id);
+                            session.user.subscriptionValid = subscriptionCheck.isValid;
+                            session.user.subscriptionMessage = subscriptionCheck.message;
+                        }
+                    } catch (error) {
+                        console.error('Error checking subscription in session:', error);
+                        session.user.subscriptionValid = false;
+                        session.user.subscriptionMessage = "Error checking subscription";
+                    }
+                } else {
+                    session.user.subscriptionValid = true;
+                    session.user.subscriptionMessage = "Admin user - no restriction";
+                }
             }
             return session;
         },

@@ -11,7 +11,7 @@ import {
 } from "../components/ui/tabs";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { toast } from "sonner";
 
 const LoginPage = () => {
@@ -32,6 +32,20 @@ const LoginPage = () => {
         // Get the user's role from the session
         const response = await fetch("/api/auth/session");
         const session = await response.json();
+
+        // Check subscription status for non-admin users
+        if (session?.user?.role !== "admin") {
+          const subscriptionResponse = await fetch("/api/auth/check-subscription");
+          const subscriptionData = await subscriptionResponse.json();
+          
+          if (!subscriptionData.success || !subscriptionData.isValid) {
+            // Sign out the user
+            await signOut({ redirect: false });
+            toast.error("Access denied: " + (subscriptionData.message || "Subscription is inactive"));
+            setIsSubmitting(false);
+            return;
+          }
+        }
 
         // Redirect based on role
         if (session?.user?.role === "admin") {
