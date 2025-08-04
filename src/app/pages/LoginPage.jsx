@@ -38,6 +38,21 @@ const LoginPage = () => {
         console.log('Showing subscription inactive error message');
         setSubscriptionError(message || 'Your clinic subscription is inactive. Please contact your administrator.');
         
+        // Handle signout for subscription issues
+        const handleSubscriptionSignout = async () => {
+          try {
+            await signOut({ 
+              redirect: false,
+              callbackUrl: '/login'
+            });
+            console.log('User signed out due to subscription issue');
+          } catch (error) {
+            console.error('Error signing out:', error);
+          }
+        };
+        
+        handleSubscriptionSignout();
+        
         // Clear the URL parameters after showing the error
         const newUrl = new URL(window.location);
         newUrl.searchParams.delete('error');

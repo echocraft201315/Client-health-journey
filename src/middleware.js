@@ -24,29 +24,29 @@ export default withAuth(
                 });
 
                 if (!response.ok) {
-                    // If the subscription check API fails, redirect to signout
-                    const logoutUrl = new URL('/api/auth/signout', req.url);
-                    const callbackUrl = `/login?error=subscription_inactive&message=${encodeURIComponent('Unable to verify subscription status. Please try again.')}`;
-                    logoutUrl.searchParams.set('callbackUrl', callbackUrl);
-                    return NextResponse.redirect(logoutUrl);
+                    // If the subscription check API fails, redirect directly to login with error
+                    const loginUrl = new URL('/login', req.url);
+                    loginUrl.searchParams.set('error', 'subscription_inactive');
+                    loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
+                    return NextResponse.redirect(loginUrl);
                 }
 
                 const data = await response.json();
 
                 if (!data.success || !data.isValid) {
-                    // Redirect to signout when subscription is inactive
-                    const logoutUrl = new URL('/api/auth/signout', req.url);
-                    const callbackUrl = `/login?error=subscription_inactive&message=${encodeURIComponent(data.message || 'Subscription is inactive')}`;
-                    logoutUrl.searchParams.set('callbackUrl', callbackUrl);
-                    return NextResponse.redirect(logoutUrl);
+                    // Redirect directly to login with error when subscription is inactive
+                    const loginUrl = new URL('/login', req.url);
+                    loginUrl.searchParams.set('error', 'subscription_inactive');
+                    loginUrl.searchParams.set('message', data.message || 'Subscription is inactive');
+                    return NextResponse.redirect(loginUrl);
                 }
             } catch (error) {
                 console.log('Error checking subscription in middleware:', error);
-                // On error, redirect to signout
-                const logoutUrl = new URL('/api/auth/signout', req.url);
-                const callbackUrl = `/login?error=subscription_inactive&message=${encodeURIComponent('Unable to verify subscription status. Please try again.')}`;
-                logoutUrl.searchParams.set('callbackUrl', callbackUrl);
-                return NextResponse.redirect(logoutUrl);
+                // On error, redirect directly to login
+                const loginUrl = new URL('/login', req.url);
+                loginUrl.searchParams.set('error', 'subscription_inactive');
+                loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
+                return NextResponse.redirect(loginUrl);
             }
         }
 
