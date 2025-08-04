@@ -57,20 +57,6 @@ const LoginPage = () => {
         console.log('User came from protected route (referrer):', document.referrer);
         // This could indicate a subscription issue
       }
-      
-      // Fallback: Check for subscription logout cookie
-      const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-        const [key, value] = cookie.trim().split('=');
-        acc[key] = value;
-        return acc;
-      }, {});
-      
-      if (cookies.subscription_logout === 'true') {
-        console.log('Subscription logout cookie found');
-        setSubscriptionError('Your clinic subscription is inactive. Please contact your administrator.');
-        // Clear the cookie
-        document.cookie = 'subscription_logout=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      }
     };
 
     // Check immediately
