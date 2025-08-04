@@ -22,64 +22,31 @@ export default withAuth(
                         'User-Agent': req.headers.get('user-agent') || '',
                     },
                 });
-
+                console.log('Subscription check response:', response);
                 if (!response.ok) {
-                    // If the subscription check API fails, redirect to login and clear session
+                    // If the subscription check API fails, redirect directly to login with error
                     const loginUrl = new URL('/login', req.url);
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
-
-                    const response = NextResponse.redirect(loginUrl);
-
-                    // Clear session cookies
-                    response.cookies.delete('next-auth.session-token');
-                    response.cookies.delete('__Secure-next-auth.session-token');
-                    response.cookies.delete('next-auth.csrf-token');
-                    response.cookies.delete('__Host-next-auth.csrf-token');
-                    response.cookies.delete('next-auth.callback-url');
-                    response.cookies.delete('__Secure-next-auth.callback-url');
-
-                    return response;
+                    return NextResponse.redirect(loginUrl);
                 }
 
                 const data = await response.json();
-
+                console.log('Subscription check data:', data);
                 if (!data.success || !data.isValid) {
-                    // Redirect to login and clear session when subscription is inactive
+                    // Redirect directly to login with error when subscription is inactive
                     const loginUrl = new URL('/login', req.url);
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', data.message || 'Subscription is inactive');
-
-                    const response = NextResponse.redirect(loginUrl);
-
-                    // Clear session cookies
-                    response.cookies.delete('next-auth.session-token');
-                    response.cookies.delete('__Secure-next-auth.session-token');
-                    response.cookies.delete('next-auth.csrf-token');
-                    response.cookies.delete('__Host-next-auth.csrf-token');
-                    response.cookies.delete('next-auth.callback-url');
-                    response.cookies.delete('__Secure-next-auth.callback-url');
-
-                    return response;
+                    return NextResponse.redirect(loginUrl);
                 }
             } catch (error) {
                 console.log('Error checking subscription in middleware:', error);
-                // On error, redirect to login and clear session
+                // On error, redirect directly to login
                 const loginUrl = new URL('/login', req.url);
                 loginUrl.searchParams.set('error', 'subscription_inactive');
                 loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
-
-                const response = NextResponse.redirect(loginUrl);
-
-                // Clear session cookies
-                response.cookies.delete('next-auth.session-token');
-                response.cookies.delete('__Secure-next-auth.session-token');
-                response.cookies.delete('next-auth.csrf-token');
-                response.cookies.delete('__Host-next-auth.csrf-token');
-                response.cookies.delete('next-auth.callback-url');
-                response.cookies.delete('__Secure-next-auth.callback-url');
-
-                return response;
+                return NextResponse.redirect(loginUrl);
             }
         }
 
