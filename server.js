@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = dev ? "localhost" : (process.env.NEXTAUTH_URL ? new URL(process.env.NEXTAUTH_URL).hostname : "app.clienthealthtracker.com");
-const port = process.env.PORT || 3000;
+const port = dev ? 3000 : (process.env.PORT || (process.env.NEXTAUTH_URL ? new URL(process.env.NEXTAUTH_URL).port || 80 : 80));
 
 const emailUserId = {
   publicKey: process.env.EMAIL_PUBLIC_KEY,
@@ -14,7 +14,15 @@ const emailUserId = {
 };
 
 // when using middleware `hostname` and `port` must be provided below
-const app = next({ dev, hostname, port });
+const app = next({
+  dev,
+  hostname,
+  port,
+  // Use HTTPS in production if NEXTAUTH_URL is HTTPS
+  ...(process.env.NEXTAUTH_URL && new URL(process.env.NEXTAUTH_URL).protocol === 'https:' && {
+    https: true
+  })
+});
 const handler = app.getRequestHandler();
 
 app.prepare().then(() => {
