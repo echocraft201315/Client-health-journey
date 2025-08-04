@@ -64,7 +64,21 @@ const LoginPage = () => {
         const response = await fetch("/api/auth/session");
         const session = await response.json();
 
-        // Redirect based on role - let middleware handle subscription checks
+        // Check subscription status before redirecting
+        if (session?.user?.role !== "admin") {
+          const subscriptionResponse = await fetch("/api/auth/check-subscription");
+          const subscriptionData = await subscriptionResponse.json();
+          
+          if (!subscriptionData.success || !subscriptionData.isValid) {
+            // Sign out the user and show error
+            await signOut({ redirect: false });
+            toast.error(subscriptionData.message || "Your clinic subscription is inactive. Please contact your administrator.");
+            setIsSubmitting(false);
+            return;
+          }
+        }
+
+        // Redirect based on role - only if subscription is valid
         if (session?.user?.role === "admin") {
           router.push("/admin/dashboard");
         } else if (session?.user?.role === "coach") {
