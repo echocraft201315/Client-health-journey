@@ -7,6 +7,10 @@ export default withAuth(
         console.log('Path:', req.nextUrl.pathname);
         console.log('Method:', req.method);
         console.log('Origin:', req.nextUrl.origin);
+        console.log('Actual URL:', req.url);
+        console.log('Headers host:', req.headers.get('host'));
+        console.log('X-Forwarded-Host:', req.headers.get('x-forwarded-host'));
+        console.log('X-Forwarded-Proto:', req.headers.get('x-forwarded-proto'));
 
         const token = req.nextauth.token;
         console.log('Token exists:', !!token);

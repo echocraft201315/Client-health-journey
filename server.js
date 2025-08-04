@@ -5,8 +5,8 @@ const emailjs = require('@emailjs/nodejs');
 require('dotenv').config();
 
 const dev = process.env.NODE_ENV !== "production";
-const hostname = "localhost";
-const port = 3000;
+const hostname = dev ? "localhost" : (process.env.NEXTAUTH_URL ? new URL(process.env.NEXTAUTH_URL).hostname : "app.clienthealthtracker.com");
+const port = process.env.PORT || 3000;
 
 const emailUserId = {
   publicKey: process.env.EMAIL_PUBLIC_KEY,
