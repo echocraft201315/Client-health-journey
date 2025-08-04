@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = dev ? "localhost" : (process.env.NEXTAUTH_URL ? new URL(process.env.NEXTAUTH_URL).hostname : "app.clienthealthtracker.com");
-const port = parseInt(process.env.PORT) || (dev ? 3000 : 80);
+const port = process.env.PORT || 3000;
 
 const emailUserId = {
   publicKey: process.env.EMAIL_PUBLIC_KEY,
@@ -107,18 +107,11 @@ app.prepare().then(() => {
 
   httpServer
     .once("error", (err) => {
-      console.error('Server error:', err);
-      if (err.code === 'EADDRINUSE') {
-        console.error(`Port ${port} is already in use. Please try a different port.`);
-      }
+      console.error(err);
       process.exit(1);
     })
     .listen(port, () => {
-      const protocol = dev ? 'http' : 'https';
-      console.log(`> Ready on ${protocol}://${hostname}${dev ? ':' + port : ''}`);
-      console.log(`> Environment: ${process.env.NODE_ENV}`);
-      console.log(`> Port: ${port}`);
-      console.log(`> Hostname: ${hostname}`);
+      console.log(`> Ready on http://${hostname}:${port}`);
     });
 });
 

@@ -27,10 +27,8 @@ export default withAuth(
         if (token?.email) {
             console.log('Checking subscription for user:', token.email);
             try {
-                // Construct the correct base URL for production
-                const protocol = req.headers.get('x-forwarded-proto') || (req.nextUrl.protocol || 'https');
-                const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.hostname;
-                const baseUrl = `${protocol}://${host}`;
+                // Use absolute URL to avoid self-referencing issues in production
+                const baseUrl = req.nextUrl.origin;
                 const checkUrl = `${baseUrl}/api/auth/check-subscription`;
                 console.log('Making request to:', checkUrl);
 
