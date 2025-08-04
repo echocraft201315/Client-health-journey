@@ -18,6 +18,17 @@ const LoginPage = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Check for subscription inactive error from URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const message = urlParams.get('message');
+    
+    if (error === 'subscription_inactive') {
+      toast.error(message || 'Your clinic subscription is inactive. Please contact your administrator.');
+    }
+  }, []);
+
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
