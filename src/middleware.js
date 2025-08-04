@@ -10,7 +10,7 @@ export default withAuth(
             return NextResponse.next();
         }
 
-        // For non-admin users, check subscription status
+        // For non-admin users (including clinic_admins), check subscription status
         if (token?.email) {
             try {
                 const response = await fetch(`${req.nextUrl.origin}/api/auth/check-subscription`, {
@@ -30,8 +30,13 @@ export default withAuth(
                     return NextResponse.redirect(loginUrl);
                 }
             } catch (error) {
-                console.error('Error checking subscription in middleware:', error);
-                // On error, allow the request to proceed (fail open)
+                console.log('Error checking subscription in middleware:', error);
+                // On error, redirect to login instead of allowing the request to proceed
+                const loginUrl = new URL('/login', req.url);
+                loginUrl.searchParams.set('error', 'subscription_inactive');
+                loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
+                console.log('Middleware redirecting to login due to subscription check error:', loginUrl.toString());
+                return NextResponse.redirect(loginUrl);
             }
         }
 
