@@ -3,7 +3,10 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
     async function middleware(req) {
+        console.log('Middleware triggered for:', req.nextUrl.pathname);
         const token = req.nextauth.token;
+        console.log('Token role:', token?.role);
+        console.log('Token email:', token?.email);
 
         // Skip subscription check for admin users
         if (token?.role === "admin") {
@@ -22,7 +25,7 @@ export default withAuth(
                         'User-Agent': req.headers.get('user-agent') || '',
                     },
                 });
-                console.log('Subscription check response:', response);
+
                 if (!response.ok) {
                     // If the subscription check API fails, redirect directly to login with error
                     const loginUrl = new URL('/login', req.url);
@@ -32,7 +35,10 @@ export default withAuth(
                 }
 
                 const data = await response.json();
-                console.log('Subscription check data:', data);
+                console.log('Data success:', data.success);
+                console.log('Data isValid:', data.isValid);
+                console.log('Condition check:', !data.success || !data.isValid);
+
                 if (!data.success || !data.isValid) {
                     // Redirect directly to login with error when subscription is inactive
                     const loginUrl = new URL('/login', req.url);
