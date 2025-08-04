@@ -62,11 +62,23 @@ const authOptions = {
                             const subscriptionCheck = await checkSubscriptionStatus(user.id);
                             session.user.subscriptionValid = subscriptionCheck.isValid;
                             session.user.subscriptionMessage = subscriptionCheck.message;
+
+                            // Store subscription error info for potential logout scenarios
+                            if (!subscriptionCheck.isValid) {
+                                session.user.subscriptionError = {
+                                    error: 'subscription_inactive',
+                                    message: subscriptionCheck.message
+                                };
+                            }
                         }
                     } catch (error) {
                         console.error('Error checking subscription in session:', error);
                         session.user.subscriptionValid = false;
                         session.user.subscriptionMessage = "Error checking subscription";
+                        session.user.subscriptionError = {
+                            error: 'subscription_inactive',
+                            message: "Error checking subscription"
+                        };
                     }
                 } else {
                     session.user.subscriptionValid = true;
@@ -76,6 +88,11 @@ const authOptions = {
             return session;
         },
         async redirect({ url, baseUrl }) {
+            // If the URL contains subscription error parameters, preserve them
+            if (url.includes('error=subscription_inactive')) {
+                return url;
+            }
+
             // If the URL is relative, prepend the base URL
             if (url.startsWith("/")) return `${baseUrl}${url}`;
             // If the URL is already absolute, return it

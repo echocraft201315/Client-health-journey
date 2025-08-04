@@ -13,10 +13,13 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { signIn, signOut } from "next-auth/react";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 const LoginPage = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [subscriptionError, setSubscriptionError] = useState(null);
 
   // Check for subscription inactive error from URL params
   useEffect(() => {
@@ -25,18 +28,34 @@ const LoginPage = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const error = urlParams.get('error');
       const message = urlParams.get('message');
+      const callbackUrl = urlParams.get('callbackUrl');
       
-      console.log('LoginPage useEffect - URL params:', { error, message, search: window.location.search });
+      console.log('LoginPage useEffect - URL params:', { error, message, callbackUrl, search: window.location.search });
+      console.log('Current URL:', window.location.href);
+      console.log('Referrer:', document.referrer);
       
       if (error === 'subscription_inactive') {
         console.log('Showing subscription inactive error message');
-        toast.error(message || 'Your clinic subscription is inactive. Please contact your administrator.');
+        setSubscriptionError(message || 'Your clinic subscription is inactive. Please contact your administrator.');
         
         // Clear the URL parameters after showing the error
         const newUrl = new URL(window.location);
         newUrl.searchParams.delete('error');
         newUrl.searchParams.delete('message');
+        newUrl.searchParams.delete('callbackUrl');
         window.history.replaceState({}, '', newUrl);
+      }
+      
+      // Fallback: Check if user was redirected from a protected route (might indicate subscription issue)
+      if (callbackUrl && (callbackUrl.includes('/clinic/') || callbackUrl.includes('/coach/') || callbackUrl.includes('/client/'))) {
+        console.log('User was redirected from protected route:', callbackUrl);
+        // This might indicate a subscription issue, but we'll only show alert if we have explicit error
+      }
+      
+      // Additional fallback: Check referrer for protected routes
+      if (document.referrer && (document.referrer.includes('/clinic/') || document.referrer.includes('/coach/') || document.referrer.includes('/client/'))) {
+        console.log('User came from protected route (referrer):', document.referrer);
+        // This could indicate a subscription issue
       }
     };
 
@@ -46,10 +65,23 @@ const LoginPage = () => {
     // Also check after a small delay to handle any timing issues
     const timeoutId = setTimeout(checkUrlParams, 100);
     
-    return () => clearTimeout(timeoutId);
+    // Check again after a longer delay to catch any late URL updates
+    const timeoutId2 = setTimeout(checkUrlParams, 500);
+    
+    // Check again after 1 second to catch any very late URL updates
+    const timeoutId3 = setTimeout(checkUrlParams, 1000);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      clearTimeout(timeoutId2);
+      clearTimeout(timeoutId3);
+    };
   }, []); // Run only once when component mounts
 
   const onSubmit = async (data) => {
+    // Clear subscription error when user tries to login
+    setSubscriptionError(null);
+    
     setIsSubmitting(true);
     try {
       const result = await signIn("credentials", {
@@ -72,7 +104,7 @@ const LoginPage = () => {
           if (!subscriptionData.success || !subscriptionData.isValid) {
             // Sign out the user and show error
             await signOut({ redirect: false });
-            toast.error(subscriptionData.message || "Your clinic subscription is inactive. Please contact your administrator.");
+            setSubscriptionError(subscriptionData.message || "Your clinic subscription is inactive. Please contact your administrator.");
             setIsSubmitting(false);
             return;
           }
@@ -106,6 +138,17 @@ const LoginPage = () => {
       <div className="max-w-md w-full">
         <div className="bg-white p-4 sm:p-8 rounded-lg shadow-md">
           <LoginHeader />
+          
+          {/* Subscription Inactive Warning Alert */}
+          {subscriptionError && (
+            <Alert className="mb-6 border-red-200 bg-red-50">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800 font-medium">
+                {subscriptionError}
+              </AlertDescription>
+            </Alert>
+          )}
+          
           {/* <Tabs
             defaultValue="login"
             className="mt-6"

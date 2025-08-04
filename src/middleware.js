@@ -13,62 +13,40 @@ export default withAuth(
         // For non-admin users (including clinic_admins), check subscription status
         if (token?.email) {
             try {
-                const response = await fetch(`${req.nextUrl.origin}/api/auth/check-subscription`, {
+                // Use absolute URL to avoid self-referencing issues in production
+                const baseUrl = req.nextUrl.origin;
+                const response = await fetch(`${baseUrl}/api/auth/check-subscription`, {
+                    method: 'GET',
                     headers: {
                         'Cookie': req.headers.get('cookie') || '',
+                        'User-Agent': req.headers.get('user-agent') || '',
                     },
                 });
+
+                if (!response.ok) {
+                    // If the subscription check API fails, redirect directly to login with error
+                    const loginUrl = new URL('/login', req.url);
+                    loginUrl.searchParams.set('error', 'subscription_inactive');
+                    loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
+                    return NextResponse.redirect(loginUrl);
+                }
 
                 const data = await response.json();
 
                 if (!data.success || !data.isValid) {
-                    // For API routes, return error response instead of redirect
-                    if (req.nextUrl.pathname.startsWith('/api/')) {
-                        console.log('API route detected, returning error response');
-                        return NextResponse.json(
-                            {
-                                success: false,
-                                message: 'Subscription is inactive',
-                                redirect: true,
-                                redirectUrl: '/login?error=subscription_inactive&message=' + encodeURIComponent(data.message || 'Subscription is inactive')
-                            },
-                            { status: 403 }
-                        );
-                    }
-
-                    // For page routes, redirect to login
-                    const baseUrl = req.nextUrl.origin;
-                    const loginUrl = new URL('/login', baseUrl);
+                    // Redirect directly to login with error when subscription is inactive
+                    const loginUrl = new URL('/login', req.url);
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', data.message || 'Subscription is inactive');
-                    console.log('Middleware redirecting to login with subscription error:', loginUrl.toString());
-                    return NextResponse.redirect(loginUrl, 302);
+                    return NextResponse.redirect(loginUrl);
                 }
             } catch (error) {
                 console.log('Error checking subscription in middleware:', error);
-                // On error, redirect to login instead of allowing the request to proceed
-
-                // For API routes, return error response instead of redirect
-                if (req.nextUrl.pathname.startsWith('/api/')) {
-                    console.log('API route detected, returning error response for catch block');
-                    return NextResponse.json(
-                        {
-                            success: false,
-                            message: 'Unable to verify subscription status. Please try again.',
-                            redirect: true,
-                            redirectUrl: '/login?error=subscription_inactive&message=' + encodeURIComponent('Unable to verify subscription status. Please try again.')
-                        },
-                        { status: 403 }
-                    );
-                }
-
-                // For page routes, redirect to login
-                const baseUrl = req.nextUrl.origin;
-                const loginUrl = new URL('/login', baseUrl);
+                // On error, redirect directly to login
+                const loginUrl = new URL('/login', req.url);
                 loginUrl.searchParams.set('error', 'subscription_inactive');
                 loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
-                console.log('Middleware redirecting to login due to subscription check error:', loginUrl.toString());
-                return NextResponse.redirect(loginUrl, 302);
+                return NextResponse.redirect(loginUrl);
             }
         }
 
