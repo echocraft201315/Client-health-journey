@@ -55,9 +55,10 @@ User Request → Middleware → Check Subscription → Allow/Redirect
 - **Admin users**: Automatically exempted
 
 ### ✅ **User Experience**
-- Clear error messages
-- Automatic redirects
+- Clear subscription error messages
+- Automatic redirects with proper error context
 - No broken functionality
+- Prevents error message duplication
 
 ## Code Examples
 
@@ -123,7 +124,7 @@ export const config = {
 1. User was offline when webhook received
 2. User comes back online and makes any request
 3. Middleware detects inactive subscription
-4. User redirected to login with error message
+4. User redirected to login with clear subscription error message
 
 ### ✅ **Admin User**
 1. Admin makes request to any route

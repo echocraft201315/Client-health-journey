@@ -17,6 +17,7 @@ import { toast } from "sonner";
 const LoginPage = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasShownSubscriptionError, setHasShownSubscriptionError] = useState(false);
 
   // Check for subscription inactive error from URL params
   useEffect(() => {
@@ -24,10 +25,17 @@ const LoginPage = () => {
     const error = urlParams.get('error');
     const message = urlParams.get('message');
     
-    if (error === 'subscription_inactive') {
+    if (error === 'subscription_inactive' && !hasShownSubscriptionError) {
       toast.error(message || 'Your clinic subscription is inactive. Please contact your administrator.');
+      setHasShownSubscriptionError(true);
+      
+      // Clear the URL parameters after showing the error
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.delete('error');
+      newUrl.searchParams.delete('message');
+      window.history.replaceState({}, '', newUrl);
     }
-  }, []);
+  }, [hasShownSubscriptionError]);
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -44,21 +52,7 @@ const LoginPage = () => {
         const response = await fetch("/api/auth/session");
         const session = await response.json();
 
-        // Check subscription status for non-admin users
-        if (session?.user?.role !== "admin") {
-          const subscriptionResponse = await fetch("/api/auth/check-subscription");
-          const subscriptionData = await subscriptionResponse.json();
-          
-          if (!subscriptionData.success || !subscriptionData.isValid) {
-            // Sign out the user
-            await signOut({ redirect: false });
-            toast.error("Access denied: " + (subscriptionData.message || "Subscription is inactive"));
-            setIsSubmitting(false);
-            return;
-          }
-        }
-
-        // Redirect based on role
+        // Redirect based on role - let middleware handle subscription checks
         if (session?.user?.role === "admin") {
           router.push("/admin/dashboard");
         } else if (session?.user?.role === "coach") {
