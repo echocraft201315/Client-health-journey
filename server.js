@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = dev ? "localhost" : (process.env.NEXTAUTH_URL ? new URL(process.env.NEXTAUTH_URL).hostname : "app.clienthealthtracker.com");
-const port = process.env.PORT || 3000;
+const port = dev ? 3000 : (process.env.PORT || 80);
 
 const emailUserId = {
   publicKey: process.env.EMAIL_PUBLIC_KEY,
@@ -111,7 +111,8 @@ app.prepare().then(() => {
       process.exit(1);
     })
     .listen(port, () => {
-      console.log(`> Ready on http://${hostname}:${port}`);
+      const protocol = dev ? 'http' : 'https';
+      console.log(`> Ready on ${protocol}://${hostname}${dev ? ':' + port : ''}`);
     });
 });
 
