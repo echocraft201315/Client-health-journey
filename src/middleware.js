@@ -3,19 +3,32 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
     async function middleware(req) {
+        console.log('=== MIDDLEWARE TRIGGERED ===');
+        console.log('Path:', req.nextUrl.pathname);
+        console.log('Method:', req.method);
+        console.log('Origin:', req.nextUrl.origin);
+
         const token = req.nextauth.token;
+        console.log('Token exists:', !!token);
+        console.log('Token role:', token?.role);
+        console.log('Token email:', token?.email);
 
         // Skip subscription check for admin users
         if (token?.role === "admin") {
+            console.log('Skipping subscription check for admin user');
             return NextResponse.next();
         }
 
         // For non-admin users (including clinic_admins), check subscription status
         if (token?.email) {
+            console.log('Checking subscription for user:', token.email);
             try {
                 // Use absolute URL to avoid self-referencing issues in production
                 const baseUrl = req.nextUrl.origin;
-                const response = await fetch(`${baseUrl}/api/auth/check-subscription`, {
+                const checkUrl = `${baseUrl}/api/auth/check-subscription`;
+                console.log('Making request to:', checkUrl);
+
+                const response = await fetch(checkUrl, {
                     method: 'GET',
                     headers: {
                         'Cookie': req.headers.get('cookie') || '',
@@ -23,69 +36,53 @@ export default withAuth(
                     },
                 });
 
-                if (!response.ok) {
-                    // For API routes, return 401 instead of redirecting
-                    if (req.nextUrl.pathname.startsWith('/api/')) {
-                        return NextResponse.json(
-                            {
-                                success: false,
-                                message: 'Unable to verify subscription status',
-                                redirectTo: '/login?error=subscription_inactive&message=' + encodeURIComponent('Unable to verify subscription status. Please try again.')
-                            },
-                            { status: 401 }
-                        );
-                    }
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
-                    // For page routes, redirect to login
+                if (!response.ok) {
+                    console.log('Response not ok - redirecting to login');
+                    // If the subscription check API fails, redirect directly to login with error
                     const loginUrl = new URL('/login', req.url);
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
+                    console.log('Redirecting to:', loginUrl.toString());
                     return NextResponse.redirect(loginUrl);
                 }
 
                 const data = await response.json();
+                console.log('Response data:', data);
+                console.log('Data success:', data.success);
+                console.log('Data isValid:', data.isValid);
+                console.log('Condition check (!data.success || !data.isValid):', !data.success || !data.isValid);
 
                 if (!data.success || !data.isValid) {
-                    // For API routes, return 401 instead of redirecting
-                    if (req.nextUrl.pathname.startsWith('/api/')) {
-                        return NextResponse.json(
-                            {
-                                success: false,
-                                message: 'Subscription inactive',
-                                redirectTo: '/login?error=subscription_inactive&message=' + encodeURIComponent(data.message || 'Subscription is inactive')
-                            },
-                            { status: 401 }
-                        );
-                    }
-
-                    // For page routes, redirect to login
+                    console.log('Subscription invalid - redirecting to login');
+                    // Redirect directly to login with error when subscription is inactive
                     const loginUrl = new URL('/login', req.url);
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', data.message || 'Subscription is inactive');
+                    console.log('Redirecting to:', loginUrl.toString());
                     return NextResponse.redirect(loginUrl);
                 }
+
+                console.log('Subscription is valid - continuing');
             } catch (error) {
                 console.log('Error checking subscription in middleware:', error);
-                // On error, handle API routes differently
-                if (req.nextUrl.pathname.startsWith('/api/')) {
-                    return NextResponse.json(
-                        {
-                            success: false,
-                            message: 'Unable to verify subscription status',
-                            redirectTo: '/login?error=subscription_inactive&message=' + encodeURIComponent('Unable to verify subscription status. Please try again.')
-                        },
-                        { status: 401 }
-                    );
-                }
-
-                // For page routes, redirect directly to login
+                console.log('Error message:', error.message);
+                console.log('Error stack:', error.stack);
+                // On error, redirect directly to login
                 const loginUrl = new URL('/login', req.url);
                 loginUrl.searchParams.set('error', 'subscription_inactive');
                 loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
+                console.log('Error redirecting to:', loginUrl.toString());
                 return NextResponse.redirect(loginUrl);
             }
+        } else {
+            console.log('No token email found');
         }
 
+        console.log('Middleware completed - continuing to next');
         return NextResponse.next();
     },
     {
