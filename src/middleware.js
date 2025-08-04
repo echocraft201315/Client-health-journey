@@ -53,7 +53,19 @@ export default withAuth(
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
                     console.log('Redirecting to:', loginUrl.toString());
-                    return NextResponse.redirect(loginUrl);
+
+                    // Create response with cleared cookies
+                    const response = NextResponse.redirect(loginUrl, 302);
+
+                    // Clear NextAuth session cookies
+                    response.cookies.delete('next-auth.session-token');
+                    response.cookies.delete('__Secure-next-auth.session-token');
+                    response.cookies.delete('next-auth.csrf-token');
+                    response.cookies.delete('__Host-next-auth.csrf-token');
+                    response.cookies.delete('next-auth.callback-url');
+                    response.cookies.delete('__Secure-next-auth.callback-url');
+
+                    return response;
                 }
 
                 const data = await response.json();
@@ -69,7 +81,19 @@ export default withAuth(
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', data.message || 'Subscription is inactive');
                     console.log('Redirecting to:', loginUrl.toString());
-                    return NextResponse.redirect(loginUrl);
+
+                    // Create response with cleared cookies
+                    const response = NextResponse.redirect(loginUrl, 302);
+
+                    // Clear NextAuth session cookies
+                    response.cookies.delete('next-auth.session-token');
+                    response.cookies.delete('__Secure-next-auth.session-token');
+                    response.cookies.delete('next-auth.csrf-token');
+                    response.cookies.delete('__Host-next-auth.csrf-token');
+                    response.cookies.delete('next-auth.callback-url');
+                    response.cookies.delete('__Secure-next-auth.callback-url');
+
+                    return response;
                 }
 
                 console.log('Subscription is valid - continuing');
@@ -85,7 +109,19 @@ export default withAuth(
                 loginUrl.searchParams.set('error', 'subscription_inactive');
                 loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
                 console.log('Error redirecting to:', loginUrl.toString());
-                return NextResponse.redirect(loginUrl);
+
+                // Create response with cleared cookies
+                const response = NextResponse.redirect(loginUrl, 302);
+
+                // Clear NextAuth session cookies
+                response.cookies.delete('next-auth.session-token');
+                response.cookies.delete('__Secure-next-auth.session-token');
+                response.cookies.delete('next-auth.csrf-token');
+                response.cookies.delete('__Host-next-auth.csrf-token');
+                response.cookies.delete('next-auth.callback-url');
+                response.cookies.delete('__Secure-next-auth.callback-url');
+
+                return response;
             }
         } else {
             console.log('No token email found');
