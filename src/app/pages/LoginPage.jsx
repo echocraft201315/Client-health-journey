@@ -17,25 +17,37 @@ import { toast } from "sonner";
 const LoginPage = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasShownSubscriptionError, setHasShownSubscriptionError] = useState(false);
 
   // Check for subscription inactive error from URL params
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get('error');
-    const message = urlParams.get('message');
-    
-    if (error === 'subscription_inactive' && !hasShownSubscriptionError) {
-      toast.error(message || 'Your clinic subscription is inactive. Please contact your administrator.');
-      setHasShownSubscriptionError(true);
+    // Small delay to ensure URL is properly updated
+    const checkUrlParams = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      const message = urlParams.get('message');
       
-      // Clear the URL parameters after showing the error
-      const newUrl = new URL(window.location);
-      newUrl.searchParams.delete('error');
-      newUrl.searchParams.delete('message');
-      window.history.replaceState({}, '', newUrl);
-    }
-  }, [hasShownSubscriptionError]);
+      console.log('LoginPage useEffect - URL params:', { error, message, search: window.location.search });
+      
+      if (error === 'subscription_inactive') {
+        console.log('Showing subscription inactive error message');
+        toast.error(message || 'Your clinic subscription is inactive. Please contact your administrator.');
+        
+        // Clear the URL parameters after showing the error
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.delete('error');
+        newUrl.searchParams.delete('message');
+        window.history.replaceState({}, '', newUrl);
+      }
+    };
+
+    // Check immediately
+    checkUrlParams();
+    
+    // Also check after a small delay to handle any timing issues
+    const timeoutId = setTimeout(checkUrlParams, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, []); // Run only once when component mounts
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);

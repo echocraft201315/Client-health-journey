@@ -26,6 +26,7 @@ export default withAuth(
                     const loginUrl = new URL('/login', req.url);
                     loginUrl.searchParams.set('error', 'subscription_inactive');
                     loginUrl.searchParams.set('message', data.message || 'Subscription is inactive');
+                    console.log('Middleware redirecting to login with subscription error:', loginUrl.toString());
                     return NextResponse.redirect(loginUrl);
                 }
             } catch (error) {
