@@ -5,17 +5,18 @@ export default withAuth(
     async function middleware(req) {
         console.log('=== MIDDLEWARE TRIGGERED ===');
         console.log('Path:', req.nextUrl.pathname);
-        console.log('Method:', req.method);
-        console.log('Origin:', req.nextUrl.origin);
-        console.log('Actual URL:', req.url);
-        console.log('Headers host:', req.headers.get('host'));
-        console.log('X-Forwarded-Host:', req.headers.get('x-forwarded-host'));
-        console.log('X-Forwarded-Proto:', req.headers.get('x-forwarded-proto'));
+        // console.log('Method:', req.method);
+        // console.log('Origin:', req.nextUrl.origin);
+        // console.log('Actual URL:', req.url);
+        // console.log('Headers host:', req.headers.get('host'));
+        // console.log('X-Forwarded-Host:', req.headers.get('x-forwarded-host'));
+        // console.log('X-Forwarded-Proto:', req.headers.get('x-forwarded-proto'));
 
         const token = req.nextauth.token;
-        console.log('Token exists:', !!token);
-        console.log('Token role:', token?.role);
-        console.log('Token email:', token?.email);
+        const path = req.nextUrl.pathname;
+        // console.log('Token exists:', !!token);
+        // console.log('Token role:', token?.role);
+        // console.log('Token email:', token?.email);
 
         // Skip subscription check for admin users
         if (token?.role === "admin") {
@@ -24,7 +25,7 @@ export default withAuth(
         }
 
         // For non-admin users (including clinic_admins), check subscription status
-        if (token?.email) {
+        if (token?.email && !path.startsWith("/api")) {
             console.log('Checking subscription for user:', token.email);
             try {
                 // Use a simpler approach that works reliably
@@ -42,40 +43,40 @@ export default withAuth(
                     },
                 });
 
-                console.log('Response status:', response.status);
-                console.log('Response ok:', response.ok);
-                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                // console.log('Response status:', response.status);
+                // console.log('Response ok:', response.ok);
+                // console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
-                if (!response.ok) {
-                    console.log('Response not ok - redirecting to login');
-                    // If the subscription check API fails, redirect directly to login with error
-                    const loginUrl = new URL('/login', baseUrl);
-                    loginUrl.searchParams.set('error', 'subscription_inactive');
-                    loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
-                    console.log('Redirecting to:', loginUrl.toString());
+                // if (!response.ok) {
+                //     // console.log('Response not ok - redirecting to login');
+                //     // If the subscription check API fails, redirect directly to login with error
+                //     const loginUrl = new URL('/login', baseUrl);
+                //     loginUrl.searchParams.set('error', 'subscription_inactive');
+                //     loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
+                //     console.log('Redirecting to:', loginUrl.toString());
 
-                    // Create response with cleared cookies
-                    const response = NextResponse.redirect(loginUrl, 302);
+                //     // Create response with cleared cookies
+                //     const response = NextResponse.redirect(loginUrl, 302);
 
-                    // Clear NextAuth session cookies
-                    response.cookies.delete('next-auth.session-token');
-                    response.cookies.delete('__Secure-next-auth.session-token');
-                    response.cookies.delete('next-auth.csrf-token');
-                    response.cookies.delete('__Host-next-auth.csrf-token');
-                    response.cookies.delete('next-auth.callback-url');
-                    response.cookies.delete('__Secure-next-auth.callback-url');
+                //     // Clear NextAuth session cookies
+                //     response.cookies.delete('next-auth.session-token');
+                //     response.cookies.delete('__Secure-next-auth.session-token');
+                //     response.cookies.delete('next-auth.csrf-token');
+                //     response.cookies.delete('__Host-next-auth.csrf-token');
+                //     response.cookies.delete('next-auth.callback-url');
+                //     response.cookies.delete('__Secure-next-auth.callback-url');
 
-                    return response;
-                }
+                //     return response;
+                // }
 
                 const data = await response.json();
                 console.log('Response data:', data);
-                console.log('Data success:', data.success);
-                console.log('Data isValid:', data.isValid);
-                console.log('Condition check (!data.success || !data.isValid):', !data.success || !data.isValid);
+                // console.log('Data success:', data.success);
+                // console.log('Data isValid:', data.isValid);
+                // console.log('Condition check (!data.success || !data.isValid):', !data.success || !data.isValid);
 
                 if (!data.success || !data.isValid) {
-                    console.log('Subscription invalid - redirecting to login');
+                    // console.log('Subscription invalid - redirecting to login');
                     // Redirect directly to login with error when subscription is inactive
                     const loginUrl = new URL('/login', baseUrl);
                     loginUrl.searchParams.set('error', 'subscription_inactive');
