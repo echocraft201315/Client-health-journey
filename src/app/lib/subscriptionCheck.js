@@ -1,6 +1,7 @@
 import { sql } from './db/postgresql.js';
 
 export async function checkSubscriptionStatus(userId) {
+    console.log("check subscription", userId);
     try {
         // First, get the user and their clinic ID
         const userResult = await sql`
@@ -27,6 +28,8 @@ export async function checkSubscriptionStatus(userId) {
       ORDER BY "createdAt" DESC 
       LIMIT 1
     `;
+
+        console.log("check subscription status:", subscriptionResult);
 
         if (!subscriptionResult || subscriptionResult.length === 0) {
             return { isValid: false, message: "No subscription found for this clinic" };

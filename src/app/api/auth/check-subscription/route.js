@@ -15,6 +15,7 @@ export async function GET() {
             );
         }
 
+        console.log("check subscription user email:", session.user.email);
         // Get user data from database using email
         const user = await userRepo.getUserByEmail(session.user.email);
 
