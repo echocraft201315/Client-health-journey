@@ -5,18 +5,9 @@ export default withAuth(
     async function middleware(req) {
         console.log('=== MIDDLEWARE TRIGGERED ===');
         console.log('Path:', req.nextUrl.pathname);
-        // console.log('Method:', req.method);
-        // console.log('Origin:', req.nextUrl.origin);
-        // console.log('Actual URL:', req.url);
-        // console.log('Headers host:', req.headers.get('host'));
-        // console.log('X-Forwarded-Host:', req.headers.get('x-forwarded-host'));
-        // console.log('X-Forwarded-Proto:', req.headers.get('x-forwarded-proto'));
 
         const token = req.nextauth.token;
         const path = req.nextUrl.pathname;
-        // console.log('Token exists:', !!token);
-        // console.log('Token role:', token?.role);
-        // console.log('Token email:', token?.email);
 
         // Skip subscription check for admin users
         if (token?.role === "admin") {
@@ -42,32 +33,6 @@ export default withAuth(
                         'User-Agent': req.headers.get('user-agent') || '',
                     },
                 });
-
-                // console.log('Response status:', response.status);
-                // console.log('Response ok:', response.ok);
-                // console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-                // if (!response.ok) {
-                //     // console.log('Response not ok - redirecting to login');
-                //     // If the subscription check API fails, redirect directly to login with error
-                //     const loginUrl = new URL('/login', baseUrl);
-                //     loginUrl.searchParams.set('error', 'subscription_inactive');
-                //     loginUrl.searchParams.set('message', 'Unable to verify subscription status. Please try again.');
-                //     console.log('Redirecting to:', loginUrl.toString());
-
-                //     // Create response with cleared cookies
-                //     const response = NextResponse.redirect(loginUrl, 302);
-
-                //     // Clear NextAuth session cookies
-                //     response.cookies.delete('next-auth.session-token');
-                //     response.cookies.delete('__Secure-next-auth.session-token');
-                //     response.cookies.delete('next-auth.csrf-token');
-                //     response.cookies.delete('__Host-next-auth.csrf-token');
-                //     response.cookies.delete('next-auth.callback-url');
-                //     response.cookies.delete('__Secure-next-auth.callback-url');
-
-                //     return response;
-                // }
 
                 const data = await response.json();
                 console.log('Response data:', data);
