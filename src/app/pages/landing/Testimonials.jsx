@@ -78,7 +78,7 @@ const Testimonials = () => {
                   <Quote className="w-8 h-8 text-primary/30" />
                   <div className="flex items-center space-x-1">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-accent text-accent" />
+                      <Star key={i} className="w-4 h-4 fill-accent1 text-accent" />
                     ))}
                   </div>
                 </div>
@@ -89,7 +89,7 @@ const Testimonials = () => {
                 </blockquote>
 
                 {/* Results Badge */}
-                <Badge className="bg-accent-light text-accent border-accent/20 mb-6">
+                <Badge className="bg-accent-light text-accent1 border-accent/20 mb-6">
                   {testimonial.results}
                 </Badge>
 
