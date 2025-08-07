@@ -1,3 +1,4 @@
+"use client"
 import { Button } from "@/app/components/ui/button";
 import { Heart, Mail, Phone, MapPin, Shield, FileText, Users } from "lucide-react";
 

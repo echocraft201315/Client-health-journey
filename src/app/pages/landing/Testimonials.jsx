@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
 import { Star, Quote, Users, Activity, Target, Brain } from "lucide-react";

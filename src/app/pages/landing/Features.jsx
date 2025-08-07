@@ -1,3 +1,4 @@
+"use client"
 import { Card, CardContent, CardHeader } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
 import { 
