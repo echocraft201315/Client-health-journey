@@ -162,7 +162,9 @@ const Pricing = () => {
             <p className="text-lg text-text-medical mb-8 max-w-2xl mx-auto">
               Large organization? We offer custom enterprise solutions with advanced security, dedicated support, and tailored integrations.
             </p>
-            <Button variant="cta" size="lg">
+            <Button variant="cta" size="lg"
+            onClick={() => window.open('https://go.clienthealthtracker.com/widget/form/MeyAJPm1mkCAgclJxxjE', '_blank')}
+            >
               Contact Sales
             </Button>
           </div>

@@ -96,7 +96,9 @@ const VideoSection = () => {
 
             {/* CTA */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="cta" size="lg">
+              <Button variant="cta" size="lg"
+              onClick={() => window.open('https://go.clienthealthtracker.com/widget/form/MeyAJPm1mkCAgclJxxjE', '_blank')}
+                >
                 Contact Sales
               </Button>
             </div>

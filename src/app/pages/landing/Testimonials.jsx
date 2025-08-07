@@ -145,7 +145,9 @@ const Testimonials = () => {
             Schedule a demo to see how we're transforming healthcare nutrition practices.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <button className="px-8 py-4 bg-gradient-accent text-white rounded-lg font-semibold hover:scale-105 transition-all duration-300 ease-in-out shadow-glow animate-glow">
+                            <button className="px-8 py-4 bg-gradient-accent text-white rounded-lg font-semibold hover:scale-105 transition-all duration-300 ease-in-out shadow-glow animate-glow"
+                            onClick={() => window.open('https://go.clienthealthtracker.com/widget/form/MeyAJPm1mkCAgclJxxjE', '_blank')}
+                            >
               Contact Sales Team
             </button>
             <button 

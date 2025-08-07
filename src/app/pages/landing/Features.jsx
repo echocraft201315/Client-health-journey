@@ -135,7 +135,9 @@ const Features = () => {
               AI-powered nutrition coaching platform and transform your practice.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                   <button className="px-8 py-3 bg-gradient-hero text-white rounded-lg font-semibold hover:scale-105 transition-all duration-300 ease-in-out shadow-elegant hover:shadow-glow">
+                                   <button className="px-8 py-3 bg-gradient-hero text-white rounded-lg font-semibold hover:scale-105 transition-all duration-300 ease-in-out shadow-elegant hover:shadow-glow"
+                onClick={() => window.open('https://go.clienthealthtracker.com/widget/form/MeyAJPm1mkCAgclJxxjE', '_blank')}
+               >
                 Contact Sales
               </button>
               <button 
