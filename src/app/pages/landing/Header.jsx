@@ -45,7 +45,9 @@ const Header = () => {
             >
               Log In
             </Button>
-            <Button variant="cta" size="lg">
+            <Button variant="cta" size="lg"
+            onClick={() => window.open('https://go.clienthealthtracker.com/widget/booking/Fwe2aulhdV6W58wEhmQZ', '_blank')}
+            >
               Schedule Demo
             </Button>
           </div>
@@ -86,7 +88,9 @@ const Header = () => {
               >
                 Log In
               </Button>
-              <Button variant="cta" size="lg">
+              <Button variant="cta" size="lg"
+              onClick = {() => window.open('https://go.clienthealthtracker.com/widget/booking/Fwe2aulhdV6W58wEhmQZ', '_blank')}
+              >
                 Schedule Demo
               </Button>
             </div>

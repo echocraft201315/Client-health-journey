@@ -146,7 +146,10 @@ const Testimonials = () => {
                             <button className="px-8 py-4 bg-gradient-accent text-white rounded-lg font-semibold hover:scale-105 transition-all duration-300 ease-in-out shadow-glow animate-glow">
               Contact Sales Team
             </button>
-            <button className="px-8 py-4 bg-white border-2 border-primary text-primary rounded-lg font-semibold hover:bg-primary hover:text-white transition-colors shadow-card">
+            <button 
+              className="px-8 py-4 bg-white border-2 border-primary text-primary rounded-lg font-semibold hover:bg-primary hover:text-white transition-colors shadow-card"
+              onClick={() => window.open('https://go.clienthealthtracker.com/widget/booking/Fwe2aulhdV6W58wEhmQZ', '_blank')}
+            >
               Schedule Demo
             </button>
           </div>

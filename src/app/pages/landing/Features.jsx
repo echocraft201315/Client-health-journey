@@ -137,7 +137,10 @@ const Features = () => {
                                    <button className="px-8 py-3 bg-gradient-hero text-white rounded-lg font-semibold hover:scale-105 transition-all duration-300 ease-in-out shadow-elegant hover:shadow-glow">
                 Contact Sales
               </button>
-              <button className="px-8 py-3 bg-white border-2 border-primary1 text-primary1 rounded-lg font-semibold hover:bg-primary1 hover:text-white transition-colors shadow-card">
+              <button 
+                className="px-8 py-3 bg-white border-2 border-primary1 text-primary1 rounded-lg font-semibold hover:bg-primary1 hover:text-white transition-colors shadow-card"
+                onClick={() => window.open('https://go.clienthealthtracker.com/widget/booking/Fwe2aulhdV6W58wEhmQZ', '_blank')}
+              >
                 Schedule Demo
               </button>
             </div>

@@ -102,6 +102,7 @@ const Hero = () => {
               <Button 
                 variant="medical" 
                 className="w-full sm:w-auto px-8 py-3 text-base font-medium h-12 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
+                onClick={() => window.open('https://go.clienthealthtracker.com/widget/booking/Fwe2aulhdV6W58wEhmQZ', '_blank')}
               >
                 Schedule Demo
               </Button>

@@ -93,7 +93,12 @@ const Footer = () => {
             
             {/* CTA */}
             <div className="pt-4">
-              <Button variant="hero" size="lg" className="w-full">
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="w-full"
+                onClick={() => window.open('https://go.clienthealthtracker.com/widget/booking/Fwe2aulhdV6W58wEhmQZ', '_blank')}
+              >
                 Schedule Demo
               </Button>
             </div>
