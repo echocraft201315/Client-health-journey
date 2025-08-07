@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
+import { Users, Crown } from "lucide-react";
 import Header from "@/app/pages/landing/Header";
 import Footer from "@/app/pages/landing/Footer";
 import PricingCards from "./PricingCards";
