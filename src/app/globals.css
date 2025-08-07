@@ -107,6 +107,32 @@
     background: var(--gradient-hero);
   }
 
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+
+  .hover\:shadow-elegant:hover {
+    box-shadow: var(--shadow-elegant);
+  }
+
+  .premium-card:hover {
+    @apply transform -translate-y-2;
+    box-shadow: var(--shadow-elegant);
+  }
+
+  .premium-card.scale-105:hover {
+    @apply transform -translate-y-2 scale-100;
+    box-shadow: var(--shadow-elegant);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .group:hover .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
   /* Text gradient utilities */
   .text-gradient-hero {
     background: var(--gradient-hero);
@@ -209,6 +235,9 @@ body {
     --sidebar-border: hsl(220 13% 91%);
     --sidebar-ring: hsl(196 72% 49%);
 
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2);
+    --shadow-card: 0 4px 6px -1px hsl(220 15% 0% / 0.1);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.3);
     --accent1: hsl(33 93% 64%);
     --secondary1: hsl(146 67% 54%);
     --accent-foreground1: hsl(0 0% 100%);
@@ -220,6 +249,7 @@ body {
     --primary-glow: hsl(197 84% 75%);
     --background1: hsl(220 15% 96%);
     --text-hero: hsl(210 40% 8%);
+    --text-medical: hsl(210 20% 35%);
     --gradient-accent: linear-gradient(135deg, var(--accent1), var(--primary-glow));
     --gradient-medical: linear-gradient(180deg, var(--primary-light), var(--background1));
     --gradient-hero: linear-gradient(135deg, var(--primary1), var(--secondary1));
@@ -319,6 +349,10 @@ body {
   --color-gradient-hero: var(--gradient-hero);
   --color-text-hero: var(--text-hero);
   --color-primary-glow: var(--primary-glow);
+  --color-text-medical: var(--text-medical);
+  --color-shadow-elegant: var(--shadow-elegant);
+  --color-shadow-card: var(--shadow-card);
+  --color-shadow-glow: var(--shadow-glow);
   /* --color-gradient-medical:var(--gradient-medical);
     --color-primary-light:var(--primary-light);
     --color-background1:var(--background1); */

@@ -18,16 +18,26 @@ const VideoPlayer = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(muted);
   const [showPlaceholder, setShowPlaceholder] = useState(!videoUrl);
+  const [isLoading, setIsLoading] = useState(false);
   const videoRef = useRef(null);
 
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
+  const togglePlay = async () => {
+    if (videoRef.current && !isLoading) {
+      setIsLoading(true);
+      try {
+        if (isPlaying) {
+          videoRef.current.pause();
+          setIsPlaying(false);
+        } else {
+          await videoRef.current.play();
+          setIsPlaying(true);
+        }
+      } catch (error) {
+        console.log('Video play/pause error:', error);
+        // Don't update state if there's an error
+      } finally {
+        setIsLoading(false);
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -72,16 +82,26 @@ const VideoPlayer = ({
 
   return (
     <div className={cn("relative rounded-2xl overflow-hidden shadow-elegant", className)}>
-      <video
-        ref={videoRef}
-        className="w-full h-auto"
-        poster={posterImage}
-        autoPlay={autoplay}
-        muted={muted}
-        loop
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-      >
+             <video
+         ref={videoRef}
+         className="w-full h-auto"
+         poster={posterImage}
+         autoPlay={autoplay}
+         muted={muted}
+         loop
+         onPlay={() => {
+           setIsPlaying(true);
+           setIsLoading(false);
+         }}
+         onPause={() => {
+           setIsPlaying(false);
+           setIsLoading(false);
+         }}
+         onError={(e) => {
+           console.log('Video error:', e);
+           setIsLoading(false);
+         }}
+       >
         <source src={videoUrl} type="video/mp4" />
         <p className="text-text-medical">
           Your browser doesn't support video playback. 
@@ -125,19 +145,24 @@ const VideoPlayer = ({
         </div>
       )}
 
-      {/* Play button overlay for initial play */}
-      {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Button
-            variant="ghost"
-            size="lg"
-            onClick={togglePlay}
-            className="w-20 h-20 rounded-full bg-white/90 hover:bg-white text-primary hover:text-primary shadow-lg"
-          >
-            <Play className="w-8 h-8 ml-1" />
-          </Button>
-        </div>
-      )}
+             {/* Play button overlay for initial play */}
+       {!isPlaying && (
+         <div className="absolute inset-0 flex items-center justify-center">
+           <Button
+             variant="ghost"
+             size="lg"
+             onClick={togglePlay}
+             disabled={isLoading}
+             className="w-20 h-20 rounded-full bg-white/90 hover:bg-white text-primary hover:text-primary shadow-lg disabled:opacity-50"
+           >
+             {isLoading ? (
+               <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+             ) : (
+               <Play className="w-8 h-8 ml-1" />
+             )}
+           </Button>
+         </div>
+       )}
     </div>
   );
 };

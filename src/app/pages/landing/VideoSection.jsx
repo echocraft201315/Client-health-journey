@@ -10,13 +10,17 @@ const VideoSection = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Video */}
           <div className="space-y-6">
-            <VideoPlayer
-              videoUrl="https://www.youtube.com/embed/IJD77x9BFJ8"
-              posterImage="/lovable-uploads/d36529e3-2ce9-4d76-8e5e-f1179622a22d.png"
-              className="w-full"
-              title="See Client Health Tracker in Action"
-              description="Watch how healthcare providers are transforming patient care with AI-powered nutrition coaching"
-            />
+            <div className="relative rounded-2xl overflow-hidden shadow-elegant w-full">
+              <iframe
+                src="https://drive.google.com/file/d/1xGnrS8puYvGz2IBmKM3NXN-Ft8TTIdUP/preview"
+                className="w-full aspect-video"
+                frameBorder="0"
+                allowFullScreen
+                title="See Client Health Tracker in Action"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              />
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/10 via-transparent to-transparent" />
+            </div>
             
             {/* Video Stats */}
             <div className="grid grid-cols-3 gap-4">
